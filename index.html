@@ -210,13 +210,39 @@ const DATA = {
     },
     trial: { users: 880, secs: 142 },
     update: { tap: 96, acc: 81, tasks: 97 },
-    // 应用排行：[名称, 是否已上架, 详情热度, 详情访问人数, 试玩人数, 新增获取量, 新任务受理人数]；新增获取量合计 = got
+    // 应用排行：[名称, 是否已上架, 详情热度, 详情访问人数, 试玩人数, 新增获取量, 新任务受理人数, 开发者, 首次上架距今天数]；新增获取量合计 = got
     apps: [
-      ['汉字拼图', true, 5200, 2480, 310, 345, 100], ['每日英语卡', true, 4300, 2050, 270, 280, 78], ['数独大师', true, 3600, 1720, 240, 212, 52],
-      ['古诗接龙', true, 2900, 1390, 170, 152, 34], ['书架整理助手', true, 2100, 1010, 60, 107, 30], ['番茄钟', true, 1800, 860, 40, 95, 26],
-      ['五子棋', true, 1500, 740, 120, 70, 14], ['单词消消乐', true, 1300, 630, 90, 60, 12], ['记账小本', true, 1000, 480, 30, 40, 9],
-      ['天气日历', false, 700, 330, 0, 25, 5], ['迷宫探险', true, 600, 290, 55, 20, 2], ['阅读打卡', false, 400, 190, 0, 14, 0]
+      ['汉字拼图', true, 5200, 2480, 310, 345, 100, '墨水屏官方', 300], ['每日英语卡', true, 4300, 2050, 270, 280, 78, '小鹿工作室', 240], ['数独大师', true, 3600, 1720, 240, 212, 52, '方块实验室', 260],
+      ['古诗接龙', true, 2900, 1390, 170, 152, 34, '墨水屏官方', 280], ['书架整理助手', true, 2100, 1010, 60, 107, 30, '阿青', 200], ['番茄钟', true, 1800, 860, 40, 95, 26, '墨水屏官方', 50],
+      ['五子棋', true, 1500, 740, 120, 70, 14, '方块实验室', 70], ['单词消消乐', true, 1300, 630, 90, 60, 12, '小鹿工作室', 85], ['记账小本', true, 1000, 480, 30, 40, 9, '林木木', 25],
+      ['天气日历', false, 700, 330, 0, 25, 5, '晴天', 180], ['迷宫探险', true, 600, 290, 55, 20, 2, 'Kai', 12], ['阅读打卡', false, 400, 190, 0, 14, 0, '阿青', 150]
     ],
+    // 开发者（3.10，业务库）：数组为 [近 7 天, 近 30 天, 近 90 天]；prev 是上一个等长周期
+    dev: {
+      official: ['墨水屏官方'],
+      recruit: {
+        apply: [18, 64, 170], passed: [12, 46, 128], viaApply: [10, 37, 106], viaInvite: [2, 9, 22],
+        sources: [['宣发视频', 5], ['开发者社群', 3], ['官网', 2], ['直接访问', 2]],
+        invIssued: [3, 10, 24], invRedeemed: [2, 9, 22],
+        project: [5, 29, 92], submit: [2, 15, 61], listed: [0, 6, 33], eligible7: [0, 38, 120], within7: [0, 23, 77],
+        prev: { apply: [15, 58, 140], passed: [10, 40, 100], qualified: [11, 41, 104] }
+      },
+      activity: {
+        active: [2, 5, 6], newActive: [0, 2, 2], submitters: [2, 6, 8], projects: [38, 150, 410],
+        versions: { new: [1, 3, 7], update: [1, 5, 13], relist: [0, 1, 2] }, updates: [2, 5, 13],
+        // 每个自然周的活跃开发者（由远到近，共 13 周），周期内取最后 ⌈天数 ÷ 7⌉ 周
+        weekly: [3, 2, 4, 3, 2, 3, 4, 3, 2, 3, 4, 5, 2],
+        prev: { active: [2, 4, 6], newActive: [1, 1, 3], submitters: [3, 5, 8], projects: [35, 131, 380], versions: [3, 8, 24], updates: [1, 4, 11] }
+      },
+      review: {
+        records: true,
+        submitted: [3, 11, 27], approved: [2, 8, 20], rejected: [1, 2, 6], withdrawn: [0, 1, 2],
+        firstSubmitted: [2, 7, 18], firstPassed: [1, 5, 13], rejectedVersions: [1, 2, 5], resubmitted: [1, 2, 4],
+        hoursMedian: [9.5, 11.2, 12.0], hoursP90: [24.0, 29.5, 31.0], overdue: [0, 1, 3],
+        reasons: [['能运行', 4], ['操作正常', 3], ['文字可读', 2], ['资料一致', 2], ['型号可运行', 1], ['无安全风险', 0], ['未分类', 1]],
+        prev: { submitted: [4, 9, 31], firstRate: [0.5, 0.67, 0.7], hoursMedian: [10.0, 12.5, 13.1], resubmitted: [1, 2, 5], withdrawn: [1, 1, 3] }
+      }
+    },
     // 供给：[近 7 天, 近 30 天, 近 90 天]
     supply: {
       listed: 10, official: 3, third: 7, developers: 6, newly: [0, 2, 5], submitted: [3, 11, 27], approved: [2, 8, 20], rejected: [1, 2, 6],
@@ -246,11 +272,33 @@ const DATA = {
     trial: { users: 310, secs: 118 },
     update: { tap: 38, acc: 30, tasks: 34 },
     apps: [
-      ['Chess Puzzles', true, 2300, 1050, 140, 128, 34], ['Word Ladder', true, 1900, 880, 120, 105, 26], ['Sudoku Zen', true, 1500, 720, 105, 82, 20],
-      ['Daily Flashcards', true, 1200, 560, 75, 63, 16], ['Pomodoro Timer', true, 900, 430, 20, 45, 14], ['Reading Log', true, 700, 330, 25, 38, 11],
-      ['Minesweeper', true, 600, 280, 55, 20, 4], ['Expense Notes', true, 480, 220, 12, 15, 3], ['Tic-Tac-Toe Plus', true, 350, 170, 40, 10, 1],
-      ['Weather Calendar', false, 260, 120, 0, 9, 2], ['Maze Runner', false, 190, 95, 18, 5, 0]
+      ['Chess Puzzles', true, 2300, 1050, 140, 128, 34, 'XTEINK Official', 300], ['Word Ladder', true, 1900, 880, 120, 105, 26, 'WordSmith', 240], ['Sudoku Zen', true, 1500, 720, 105, 82, 20, 'Zen Games', 230],
+      ['Daily Flashcards', true, 1200, 560, 75, 63, 16, 'WordSmith', 210], ['Pomodoro Timer', true, 900, 430, 20, 45, 14, 'XTEINK Official', 190], ['Reading Log', true, 700, 330, 25, 38, 11, 'Mia', 60],
+      ['Minesweeper', true, 600, 280, 55, 20, 4, 'Zen Games', 40], ['Expense Notes', true, 480, 220, 12, 15, 3, 'Leo', 20], ['Tic-Tac-Toe Plus', true, 350, 170, 40, 10, 1, 'Ana', 5],
+      ['Weather Calendar', false, 260, 120, 0, 9, 2, 'Leo', 170], ['Maze Runner', false, 190, 95, 18, 5, 0, 'Kenji', 160]
     ],
+    dev: {
+      official: ['XTEINK Official'],
+      recruit: {
+        apply: [9, 31, 84], passed: [5, 20, 57], viaApply: [4, 16, 47], viaInvite: [1, 4, 10],
+        sources: [['Launch video', 4], ['Discord', 3], ['Website', 2], ['直接访问', 1]],
+        invIssued: [1, 5, 12], invRedeemed: [1, 4, 10],
+        project: null, submit: [1, 6, 22], listed: [0, 2, 11], eligible7: [0, 17, 52], within7: null,
+        prev: { apply: [8, 26, 70], passed: [5, 17, 46], qualified: [5, 18, 47] }
+      },
+      activity: {
+        // 海外演示：提交依赖审核记录、项目依赖项目表创建时间，均未接入
+        active: [1, 4, 6], newActive: [1, 1, 2], submitters: null, projects: null,
+        versions: null, updates: [0, 3, 10],
+        weekly: [3, 2, 3, 3, 2, 1, 2, 3, 3, 2, 4, 3, 1],
+        prev: { active: [1, 3, 5], newActive: [0, 1, 2], updates: [1, 2, 7] }
+      },
+      // 海外演示「审核记录未建」：只出当前审核中与周期内通过、驳回次数
+      review: {
+        records: false, inReviewNow: 2, approved: [1, 5, 14], rejected: [1, 1, 4],
+        prev: { approved: [2, 6, 11], rejected: [1, 2, 4] }
+      }
+    },
     supply: {
       snapshot: '2026-11-16', listed: 9, official: 2, third: 7, developers: 6, newly: [1, 2, 4], submitted: [2, 7, 19], approved: [1, 5, 14], rejected: [1, 1, 4],
       prev: { listed: [9, 8, 6], official: [2, 2, 2], third: [7, 6, 4], developers: [6, 5, 4], newly: [0, 1, 2], submitted: [3, 8, 16], approved: [2, 6, 11], rejected: [1, 2, 4] }
@@ -359,14 +407,57 @@ const DEFS = {
       ['新任务受理人数', '`push_task_result`，`acceptance_result`=新任务已受理；按账号去重。'],
     ]],
     ['供给', [
-      ['数据来源', '取自业务库（应用表、审核记录），不用埋点。'],
+      ['数据来源', '取自业务库（应用表），不用埋点。'],
       ['在架应用', '周期末状态为已上架的应用数。缺历史快照时展示当前在架和快照日期。'],
       ['官方 / 第三方', '在架应用按开发者账号拆分；官方账号名单由运营提供。'],
       ['新上架', '首次上架时间在周期内的应用数。'],
       ['在架开发者', '同一在架快照内涉及的开发者账号去重数。'],
-      ['提交审核', '提交时间在周期内的审核次数。'],
-      ['审核通过、审核驳回、审核中', '上述提交中，到周期末结果为通过、驳回、还没出结果的次数，三者相加等于提交审核。'],
+      ['提交审核', '移到「开发者」页签的审核块。'],
       DELTA_DEF
+    ]]
+  ],
+
+  developer: [
+    ['通用', [
+      ['数据来源', '取自业务库，不用埋点；创作台和开发者中心没有行为埋点。数据源未建成的指标显示「未接入」。'],
+      ['开发者与归属', '开发者 = 持有本环境开发者资格（开发者白名单）的账号，国内、海外不合并。应用按应用表的开发者账号归属，不按作者署名；删除后重新发布的新应用 ID 合并到同一账号。'],
+      ['排除', '创作、提交、发布本身是作者行为，不排除作者本人；开发者排行引用的获取、受理数据仍排除作者自测和审核账号。']
+    ]],
+    ['招募与转化', [
+      ['新申请', '提交时间在周期内的申请数；一个账号只有一条申请。'],
+      ['申请通过率', '新申请中到数据截至日已通过的数 ÷ 新申请；申请不驳回，未通过的保持审核中。'],
+      ['申请来源', '按申请记录的来源参数拆分，没有参数的记为「直接访问」。'],
+      ['新获资格开发者', '获得资格时间在周期内的账号数，按「申请通过」「邀请码」拆分。'],
+      ['转化', '以本期新获资格的开发者为一组，统计到数据截至日已建首个项目、首次提交审核、首次上架的人数；占比分母为这组人数。'],
+      ['7 天建项目率', '组内获得资格后 7 天内建首个项目的人数 ÷ 组内获得资格满 7 天的人数；都不满 7 天时显示「暂无数据」。'],
+      ['邀请码发放、兑换', '发放取获得时间在周期内的邀请码数，兑换取使用时间在周期内的邀请码数。'],
+      DELTA_DEF
+    ]],
+    ['活跃与产能', [
+      ['活跃开发者', '周期内至少一次发布成功（新应用首次上架或新版本上线）的开发者账号数；卡下按自然周画趋势。'],
+      ['新增活跃开发者', '本期活跃、此前从未活跃过的账号数；对应 OKR「活跃开发者每月新增 50 位」。'],
+      ['提交开发者', '周期内至少提交一次审核的账号数。'],
+      ['新建项目', '创建时间在周期内的创作台项目数。'],
+      ['提交版本', '周期内有提交的送审版本数，按应用 × 版本去重；驳回后重提只计一次。按新应用、更新、重新上架拆分。'],
+      ['版本更新', '周期内已上架应用新版本上线成功的次数。'],
+      ['人均提交版本', '提交版本 ÷ 提交开发者。']
+    ]],
+    ['审核', [
+      ['数据来源', '审核记录，每次提交、撤回、审核结果各一条。审核记录建成前只显示当前审核中和周期内审核通过、驳回的次数。'],
+      ['提交审核', '提交时间在周期内的审核次数，每次提交计一次，重提另计；结果构成为通过、驳回、审核中三类，相加等于提交审核。'],
+      ['首次提交通过率', '周期内第一次提交的送审版本中，第一次提交即通过的版本数 ÷ 第一次提交的版本数。'],
+      ['驳回原因', '按上架底线 1–6 条分类；没有分类的记「未分类」。'],
+      ['驳回后重提', '周期内被驳回的送审版本中，到数据截至日已再次提交的版本数及占比。'],
+      ['撤回', '周期内审核中撤回的次数。'],
+      ['审核时长', '从提交到出结果的小时数，显示中位数和 P90；另计超过 1 个工作日出结果的次数。'],
+      ['质量分档', 'S–D 分档定稿上线后接入，目前显示「未接入」。']
+    ]],
+    ['开发者排行', [
+      ['范围', '每行一个周期末有在架应用、或周期内有新增获取的开发者；默认按新增获取量倒序，显示前 100。'],
+      ['在架应用、新上架', '名下应用按「供给」的快照和首次上架口径统计。'],
+      ['新增获取量', '名下应用的新增获取量之和，账号 × 应用去重。'],
+      ['新任务受理人数', '对名下任一应用获得新推送任务的账号去重数，同一用户推送该开发者多个应用只计一人。'],
+      ['第三方头部占比', '前 10 位第三方开发者的新增获取量之和 ÷ 第三方应用的新增获取量，官方不计入。']
     ]]
   ]
 };
@@ -378,20 +469,22 @@ const FA = { 7: 0.55, 30: 1, 90: 1.9 };  // App 活跃用户数的周期系数�
 const PW = { 7: 1.05, 30: 1, 90: 0.96 }; // 上期相对本期的样例波动，让不同周期的涨跌有差异
 const BLOCKS = [
   ['summary', '汇总'], ['source', '发现来源'], ['acquisition', '获取资格'], ['sends', '设备推送'], ['trial', '试玩'], ['update', '更新'],
-  ['rank', '应用排行'], ['supply', '供给'], ['search', '搜索词'], ['share', '分享']
+  ['rank', '应用排行'], ['supply', '供给'], ['search', '搜索词'], ['share', '分享'],
+  ['recruit', '招募与转化'], ['activity', '活跃与产能'], ['review', '审核'], ['devrank', '开发者排行']
 ];
 // 页签：[标识, 名称, 问题式标题, 包含的块]
 const TABS = [
   ['overview', '概览', '轻应用触达了多少 App 用户', ['summary']],
   ['discovery', '发现来源', '用户是从哪里发现应用的', ['source', 'search', 'share']],
   ['getsend', '获取与推送', '获取资格和推送分别在哪一步卡住', ['acquisition', 'sends', 'trial', 'update']],
-  ['apps', '应用与供给', '哪些应用最受欢迎，在架供给跟得上吗', ['rank', 'supply']]
+  ['apps', '应用与供给', '哪些应用最受欢迎，在架供给跟得上吗', ['rank', 'supply']],
+  ['developer', '开发者', '开发者招得来、做得出、过得了审吗', ['recruit', 'activity', 'review', 'devrank']]
 ];
 
 const state = {
   tab: 'overview', period: 30, env: 'cn',
   failed: {}, empty: {},
-  sort: { key: 'got', dir: 'desc' }, trend: 'visitors'
+  sort: { key: 'got', dir: 'desc' }, devSort: { key: 'got', dir: 'desc' }, trend: 'visitors'
 };
 
 const fmt = n => n.toLocaleString('zh-CN');
@@ -524,6 +617,50 @@ function model(env, p, empty) {
     newly: S.z ? 0 : sp.newly[si], submitted: S.z ? 0 : sp.submitted[si], approved: S.z ? 0 : sp.approved[si], rejected: S.z ? 0 : sp.rejected[si],
     prev: Object.fromEntries(Object.entries(sp.prev).map(([k, a]) => [k, a[si]]))
   };
+
+  // 3.10 开发者（业务库）。null = 数据源未接入；空周期模拟只清零期间指标，快照不变
+  const DV = D.dev;
+  const pick = (a, z) => (a ? (z ? 0 : a[si]) : null);
+  S = sc('recruit');
+  const R = DV.recruit, rp = a => pick(a, S.z);
+  const apply = rp(R.apply), viaApply = rp(R.viaApply), viaInvite = rp(R.viaInvite);
+  M.recruit = {
+    apply, passed: rp(R.passed), viaApply, viaInvite, qualified: viaApply + viaInvite,
+    sources: R.sources.map(([k], i) => [k, split(apply, R.sources.map(x => x[1]))[i]]),
+    invIssued: rp(R.invIssued), invRedeemed: rp(R.invRedeemed),
+    project: rp(R.project), submit: rp(R.submit), listed: rp(R.listed), eligible7: rp(R.eligible7), within7: rp(R.within7),
+    prev: Object.fromEntries(Object.entries(R.prev).map(([k, a]) => [k, a[si]]))
+  };
+  S = sc('activity');
+  const A = DV.activity, ap = a => pick(a, S.z), weeks = Math.ceil(p / 7);
+  M.activity = {
+    active: ap(A.active), newActive: ap(A.newActive), submitters: ap(A.submitters), projects: ap(A.projects), updates: ap(A.updates),
+    versions: A.versions ? Object.fromEntries(Object.entries(A.versions).map(([k, a]) => [k, ap(a)])) : null,
+    weekly: A.weekly.slice(-weeks).map((v, i) => ({ date: dayBack(7 * (weeks - 1 - i)).toISOString().slice(0, 10) + ' 止的一周', v: S.z ? 0 : v })),
+    prev: Object.fromEntries(Object.entries(A.prev).map(([k, a]) => [k, a[si]]))
+  };
+  S = sc('review');
+  const V = DV.review, vp = a => pick(a, S.z);
+  M.review = V.records ? {
+    records: true, submitted: vp(V.submitted), approved: vp(V.approved), rejected: vp(V.rejected), withdrawn: vp(V.withdrawn),
+    firstSubmitted: vp(V.firstSubmitted), firstPassed: vp(V.firstPassed), rejectedVersions: vp(V.rejectedVersions), resubmitted: vp(V.resubmitted),
+    hoursMedian: S.z ? null : V.hoursMedian[si], hoursP90: S.z ? null : V.hoursP90[si], overdue: vp(V.overdue),
+    reasons: V.reasons.map(([k], i) => [k, split(vp(V.rejected), V.reasons.map(x => x[1]))[i]]),
+    prev: Object.fromEntries(Object.entries(V.prev).map(([k, a]) => [k, a[si]]))
+  } : { records: false, inReviewNow: V.inReviewNow, approved: vp(V.approved), rejected: vp(V.rejected),
+    prev: Object.fromEntries(Object.entries(V.prev).map(([k, a]) => [k, a[si]])) };
+  // 开发者排行：由应用汇总到开发者账号，新增获取量合计 = 汇总的新增获取量
+  S = sc('devrank');
+  const dg = split(S.C(D.got), D.apps.map(a => a[5])), byDev = {};
+  D.apps.forEach(([, listed, , , , , push, dev, days], i) => {
+    const r = byDev[dev] || (byDev[dev] = { name: dev, official: DV.official.includes(dev), listedN: 0, newly: 0, got: 0, pushSum: 0, apps: 0 });
+    r.apps++; r.listedN += listed ? 1 : 0; r.newly += days < p ? 1 : 0; r.got += dg[i]; r.pushSum += S.P(push);
+  });
+  // 新任务受理人数按开发者去重：同一用户推送该开发者多个应用只计一人（样例按 9 折模拟重叠）
+  M.devs = Object.values(byDev).map(r => ({ ...r, acc: r.apps > 1 ? Math.round(r.pushSum * 0.9) : r.pushSum }))
+    .filter(r => r.listedN > 0 || r.got > 0);
+  const third = M.devs.filter(r => !r.official).sort((a, b) => b.got - a.got);
+  M.headShare = { top: sum(third.slice(0, 10).map(r => r.got)), all: sum(third.map(r => r.got)), n: third.length };
 
   // 3.7 搜索词
   S = sc('search');
@@ -884,16 +1021,15 @@ function renderSupply(M) {
   const developers = s.currentOnly ? '当前在架开发者' : '在架开发者';
   const one = (name, k, isSnapshot = false) => metric(name, `<b>${num(s[k])}</b>`,
     deltaCell(s[k], isSnapshot && s.currentOnly ? null : pr[k], 'count'), isSnapshot ? snapshot : periodLabel);
-  const cur = { ...s, review: s.submitted - s.approved - s.rejected };
-  const seg = (label, color, k, total) => ({ name: label, v: cur[k], color,
-    tip: [[label], [`${num(cur[k])}（${pctTxt(cur[k], total)}）`, color]] });
+  const seg = (label, color, k, total) => ({ name: label, v: s[k], color,
+    tip: [[label], [`${num(s[k])}（${pctTxt(s[k], total)}）`, color]] });
   const rows = [
-    { name: listed, total: s.listed, segs: [seg('官方', CH.accent, 'official', s.listed), seg('第三方', CH.blue, 'third', s.listed)] },
-    { name: '提交审核', total: s.submitted, track: true, segs: [seg('通过', CH.green, 'approved', s.submitted), seg('驳回', CH.red, 'rejected', s.submitted), seg('审核中', CH.prev, 'review', s.submitted)] }
+    { name: listed, total: s.listed, segs: [seg('官方', CH.accent, 'official', s.listed), seg('第三方', CH.blue, 'third', s.listed)] }
   ];
-  return `<div class="cards four">${one(listed, 'listed', true)}${one('新上架', 'newly')}${one(developers, 'developers', true)}${one('提交审核', 'submitted')}</div>
+  return `<div class="cards">${one(listed, 'listed', true)}${one('新上架', 'newly')}${one(developers, 'developers', true)}</div>
+    <p class="hint">提交审核及审核结果见「开发者」页签</p>
     ${sub('供给构成')}
-    <div class="card chart">${legend([['官方', CH.accent], ['第三方', CH.blue], ['通过', CH.green], ['驳回', CH.red], ['审核中', CH.prev]])}${chartScroll(stackBars(rows))}</div>`;
+    <div class="card chart">${legend([['官方', CH.accent], ['第三方', CH.blue]])}${chartScroll(stackBars(rows))}</div>`;
 }
 
 function renderSearch(M) {
@@ -920,6 +1056,87 @@ function renderShare(M) {
     : legend([['应用详情', CH.accent], ['精选文章', CH.blue]]) + chartScroll(hbars(rows, { nameHead: '渠道', plotHead: '次数（条长）' }))}</div>`;
   const note = `<p class="hint">只统计 App 内的操作，App 拿不到分享回调，不代表分享成功或对方打开。</p>`;
   return `${note}<div class="pair"><div>${group('应用详情', d)}</div><div>${group('精选文章', a)}</div></div>${sub('选择渠道次数')}<p class="hint">不代表分享成功</p>${chart}`;
+}
+
+// ---------- 开发者页签（3.10） ----------
+const nv = v => (v === null ? notConnected() : `<b>${num(v)}</b>`);
+const rateV = (a, b) => (a === null || b === null ? notConnected() : b === 0 ? noData() : `<b>${(a / b * 100).toFixed(1)}%</b>`);
+const rateOf = (a, b) => (a === null || b === null || b === 0 ? null : a / b);
+const dc = (cur, prev, kind = 'count') => (cur === null || prev === undefined ? null : deltaCell(cur, prev, kind));
+const devStage = (label, v, base) => `<div class="flow-stage"><span>${label}</span>${v === null ? notConnected() : `<b>${num(v)}</b>`}${v !== null && base !== undefined ? `<small>占比 · ${pct(v, base)}</small>` : ''}</div>`;
+
+function renderRecruit(M) {
+  const r = M.recruit, pr = r.prev;
+  const cards = `<div class="cards four">
+    ${metric('新申请', nv(r.apply), dc(r.apply, pr.apply))}
+    ${metric('申请通过率', rateV(r.passed, r.apply), dc(rateOf(r.passed, r.apply), rateOf(pr.passed, pr.apply), 'rate'), `<small>未通过的保持审核中，不驳回</small>`)}
+    ${metric('新获资格开发者', nv(r.qualified), dc(r.qualified, pr.qualified), `<small>申请通过 ${num(r.viaApply)} · 邀请码 ${num(r.viaInvite)}</small>`)}
+    ${metric('7 天建项目率', r.within7 === null ? notConnected() : rateV(r.within7, r.eligible7), null, `<small>分母 · 获得资格满 7 天 ${r.within7 === null || r.eligible7 === null ? dash : num(r.eligible7)}</small>`)}</div>`;
+  const srcRows = r.sources.map(([name, v]) => ({ name, bars: [{ v, color: CH.accent }], cols: [pctTxt(v, r.apply)],
+    tip: [[name], [`新申请 ${num(v)}`, CH.accent], [`占比 ${pctTxt(v, r.apply)}`]] }));
+  const src = `<div class="card chart">${!r.apply ? chartEmpty(160) : chartScroll(hbars(srcRows, { nameHead: '来源', plotHead: '新申请', colHeads: ['占比'], colsW: [90] }))}</div>`;
+  const funnel = `<p class="hint flow-note">以本期新获资格的 ${num(r.qualified)} 位开发者为一组，统计到 ${ASOF} 已完成各步的人数；占比分母为这组人数。</p>
+    <div class="card flow-card">${r.qualified ? `<div class="flow-stages">${devStage('获得资格', r.qualified)}${devStage('建首个项目', r.project, r.qualified)}${devStage('首次提交审核', r.submit, r.qualified)}${devStage('首次上架', r.listed, r.qualified)}</div>` : chartEmpty(100)}</div>`;
+  const inv = `<div class="cards">${metric('邀请码发放', nv(r.invIssued), null)}${metric('邀请码兑换', nv(r.invRedeemed), null)}</div>`;
+  return `${cards}${sub('申请来源')}${src}${sub('转化')}${funnel}${sub('邀请码')}${inv}`;
+}
+
+function renderActivity(M) {
+  const a = M.activity, pr = a.prev, v = a.versions;
+  const totalV = v ? v.new + v.update + v.relist : null;
+  const weekly = a.weekly.length > 1 ? `<div class="trend">${spark(a.weekly, 'count')}</div><small>按自然周</small>` : `<div class="trend"><span class="trend-none">不足两周，无趋势</span></div>`;
+  return `<div class="cards four">
+    ${metric('活跃开发者', nv(a.active), dc(a.active, pr.active), weekly)}
+    ${metric('新增活跃开发者', nv(a.newActive), dc(a.newActive, pr.newActive), `<small>本期首次发布成功</small>`)}
+    ${metric('提交开发者', nv(a.submitters), dc(a.submitters, pr.submitters))}
+    ${metric('新建项目', nv(a.projects), dc(a.projects, pr.projects))}
+    ${metric('提交版本', nv(totalV), dc(totalV, pr.versions), v ? `<small>新应用 ${num(v.new)} · 更新 ${num(v.update)} · 重新上架 ${num(v.relist)}</small>` : '')}
+    ${metric('版本更新', nv(a.updates), dc(a.updates, pr.updates), `<small>新应用首次上架见「供给」</small>`)}
+    ${metric('人均提交版本', totalV === null || a.submitters === null ? notConnected() : a.submitters ? `<b>${(totalV / a.submitters).toFixed(1)}</b>` : noData(), null)}</div>`;
+}
+
+function renderReview(M) {
+  const r = M.review, pr = r.prev;
+  const grade = `<div class="flow-device"><span>质量分档（S–D）</span>${notConnected()}</div>`;
+  if (!r.records) {
+    return `<p class="hint">审核记录未建（线上只存版本当前审核状态），按过渡方式只显示以下三项</p>
+      <div class="cards">${metric('当前审核中', `<b>${num(r.inReviewNow)}</b>`, null, `<small>快照日期 · ${M.supply.snapshot}</small>`)}
+      ${metric('审核通过', `<b>${num(r.approved)}</b>`, dc(r.approved, pr.approved))}${metric('审核驳回', `<b>${num(r.rejected)}</b>`, dc(r.rejected, pr.rejected))}</div>
+      <div class="card">${['提交审核', '审核结果构成', '首次提交通过率', '驳回原因', '驳回后重提', '撤回', '审核时长'].map(k =>
+        `<div class="flow-device"><span>${k}</span>${notConnected()}</div>`).join('')}${grade}</div>`;
+  }
+  const inReview = r.submitted - r.approved - r.rejected;
+  const seg = (name, v, color) => ({ name, v, color, tip: [[name], [`${num(v)}（${pctTxt(v, r.submitted)}）`, color]] });
+  const stack = stackBars([{ name: '提交审核', total: r.submitted, track: true,
+    segs: [seg('通过', r.approved, CH.green), seg('驳回', r.rejected, CH.red), seg('审核中', inReview, CH.prev)] }]);
+  const reasonRows = r.reasons.slice().sort((a, b) => b[1] - a[1]).map(([name, v]) => ({ name, bars: [{ v, color: CH.red }], cols: [pctTxt(v, r.rejected)],
+    tip: [[name], [`驳回 ${num(v)} 次`, CH.red], [`占驳回 ${pctTxt(v, r.rejected)}`]] }));
+  const hours = h => (h === null ? dash : h.toFixed(1) + ' 小时');
+  return `<div class="cards">
+    ${metric('提交审核', `<b>${num(r.submitted)}</b>`, dc(r.submitted, pr.submitted), `<small>每次提交计一次，重提另计</small>`)}
+    ${metric('首次提交通过率', rateV(r.firstPassed, r.firstSubmitted), dc(rateOf(r.firstPassed, r.firstSubmitted), pr.firstRate, 'rate'), `<small>分母 · 第一次提交的版本 ${num(r.firstSubmitted)}</small>`)}
+    ${metric('审核时长（中位数）', r.hoursMedian === null ? noData() : `<b>${hours(r.hoursMedian)}</b>`, dc(r.hoursMedian, pr.hoursMedian), `<small>P90 ${hours(r.hoursP90)} · 超过 1 个工作日 ${num(r.overdue)} 次</small>`)}
+    ${metric('驳回后重提', `<b>${num(r.resubmitted)}</b>`, dc(r.resubmitted, pr.resubmitted), `<small>占被驳回版本 ${pctTxt(r.resubmitted, r.rejectedVersions)}</small>`)}
+    ${metric('撤回', `<b>${num(r.withdrawn)}</b>`, dc(r.withdrawn, pr.withdrawn))}</div>
+    ${sub('审核结果构成')}<div class="card chart">${legend([['通过', CH.green], ['驳回', CH.red], ['审核中', CH.prev]])}${chartScroll(stack)}</div>
+    ${sub('驳回原因')}<div class="card chart">${!r.rejected ? chartEmpty(160) : chartScroll(hbars(reasonRows, { nameHead: '上架底线', plotHead: '驳回次数', colHeads: ['占比'], colsW: [90] }))}</div>
+    <div class="card">${grade}</div>`;
+}
+
+const DEV_COLS = [['listedN', '在架应用'], ['newly', '新上架'], ['got', CARD_NAMES.got], ['acc', CARD_NAMES.acc]];
+function renderDevRank(M) {
+  const { key, dir } = state.devSort, sg = dir === 'desc' ? -1 : 1;
+  const devs = M.devs.slice().sort((a, b) => sg * (a[key] - b[key]) || b.got - a.got);
+  const maxGot = Math.max(...devs.map(d => d.got), 1), h = M.headShare;
+  const arrow = k => (key === k ? (dir === 'desc' ? ' ▼' : ' ▲') : '');
+  const head = DEV_COLS.map(([k, label]) => `<th aria-sort="${key === k ? (dir === 'desc' ? 'descending' : 'ascending') : 'none'}" class="n sortable ${key === k ? 'sorted' : ''}"><button class="thbtn" data-act="devsort" data-v="${k}">${label}${arrow(k)}</button></th>`).join('');
+  const rows = devs.length ? devs.map(d => `<tr><td>${d.name}${d.official ? ' ' + badge('官方', 'orange') : ''}</td>
+    <td class="n">${num(d.listedN)}</td><td class="n">${num(d.newly)}</td><td class="n">${cellBar(d.got, maxGot)}</td><td class="n">${num(d.acc)}</td></tr>`).join('')
+    : `<tr><td colspan="5" class="center">${noData()}</td></tr>`;
+  return `<div class="cards">${metric('第三方头部占比', h.all ? `<b>${pctTxt(h.top, h.all)}</b>` : noData(), null,
+      `<small>前 10 位第三方开发者的新增获取量 ÷ 第三方应用新增获取量${h.n <= 10 ? `；示例只有 ${h.n} 位第三方开发者` : ''}</small>`)}</div>
+    <p class="hint">按应用归属的开发者账号汇总；默认按新增获取量倒序，点列头切换排序</p>
+    ${tableWrap(`<table><thead><tr><th>开发者</th>${head}</tr></thead><tbody>${rows}</tbody></table>`)}`;
 }
 
 // ---------- 页面 ----------
@@ -952,7 +1169,8 @@ function render() {
   const bodies = {
     summary: renderSummary, source: renderSource, acquisition: renderAcquisition, sends: renderSends,
     trial: renderTrial, update: renderUpdate, rank: renderRank,
-    supply: renderSupply, search: renderSearch, share: renderShare
+    supply: renderSupply, search: renderSearch, share: renderShare,
+    recruit: renderRecruit, activity: renderActivity, review: renderReview, devrank: renderDevRank
   };
   document.getElementById('app').innerHTML = `<div class="shell">${sidebar()}<main class="content">
     <div class="heading"><h1>商店使用</h1><small>演示数据 · 截至 ${ASOF}</small></div>
@@ -963,6 +1181,7 @@ function render() {
     </div>
     <nav class="tabs">${TABS.map(([k, label]) => `<button class="tab ${state.tab === k ? 'on' : ''}" data-act="tab" data-v="${k}">${label}</button>`).join('')}</nav>
     <h2 class="tab-title">${tab[2]}</h2>
+    ${state.tab === 'developer' ? `<p class="hint">开发者的创作、提交和发布数据不排除作者本人；排行中的获取、受理数据仍排除作者自测</p>` : ''}
     ${state.tab === 'getsend'
       ? `<div class="flow-grid">${tab[3].slice(0, 2).map(k => block(k, bodies[k](M))).join('')}</div>
         ${tab[3].slice(2).map(k => block(k, bodies[k](M))).join('')}`
@@ -978,6 +1197,8 @@ function onAct(act, v) {
   else if (act === 'env') state.env = v;
   else if (act === 'sort') {
     state.sort = state.sort.key === v ? { key: v, dir: state.sort.dir === 'desc' ? 'asc' : 'desc' } : { key: v, dir: 'desc' };
+  } else if (act === 'devsort') {
+    state.devSort = state.devSort.key === v ? { key: v, dir: state.devSort.dir === 'desc' ? 'asc' : 'desc' } : { key: v, dir: 'desc' };
   } else if (act === 'retry') delete state.failed[v];
   else if (typeof consoleAct === 'function' && consoleAct(act, v)) { /* 已处理 */ }
   else return;
@@ -1016,7 +1237,7 @@ function consoleAct(act, v) {
   if (act === 'simEmpty') { state.empty[consoleBlockSel] = true; showBlockTab(); return true; }
   if (act === 'resetAll') {
     state.failed = {}; state.empty = {}; state.tab = 'overview'; state.period = 30; state.env = 'cn';
-    state.sort = { key: 'got', dir: 'desc' }; consoleBlockSel = 'summary';
+    state.sort = { key: 'got', dir: 'desc' }; state.devSort = { key: 'got', dir: 'desc' }; consoleBlockSel = 'summary';
     return true;
   }
   return false;
