@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>轻应用数据看板 Demo</title>
+<style>:root{--ink:#222a2c;--muted:#788184;--line:#e6e8eb;--bg:#f6f9fc;--accent:#cc5d27;--green:#317455;--wash:#fbf0e9}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font:14px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC',sans-serif;background:var(--bg)}
+button,select{font:inherit}
+button{cursor:pointer;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);padding:7px 14px;font-weight:550}
+button:hover{border-color:#a6b3b2;background:#fafbfb}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.link{border:0;background:none;padding:5px 8px;color:#bd542d}
+button.link:hover{background:none;text-decoration:underline}
+select{padding:7px 10px;border:1px solid #dce2e2;border-radius:7px;background:#fff;color:var(--ink);width:100%}
+h1,h2,h3,p{margin:0}
+h1{font-size:25px;letter-spacing:-.5px}
+h2{font-size:18px}
+small,.muted{color:var(--muted)}
+small{font-size:12px}
+
+.shell{display:grid;grid-template-columns:210px minmax(0,1fr);min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;background:#fff;border-right:1px solid var(--line);border-left:5px solid #e6e9ef;padding:24px 14px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:750;font-size:15px}
+.brand span{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;background:#222a2c;color:#fff;font-size:13px}
+.navgroup{margin-top:22px}
+.navgroup small{display:block;padding:0 12px 4px}
+.navitem{padding:9px 12px;border-radius:8px;color:#80858a;font-size:13px}
+.navitem.active{background:var(--wash);color:#b84920;font-weight:650}
+
+.content{padding:26px 30px 90px;min-width:0}
+.heading{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.controls{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin:16px 0 8px}
+.seg{display:flex;gap:6px}
+.block{margin-top:26px}
+.block-head{border-bottom:2px solid var(--ink);padding-bottom:8px;margin-bottom:14px}
+.sub{font-size:15px;margin:20px 0 10px}
+.hint{font-size:12px;color:var(--muted);margin:-4px 0 8px}
+
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.card.tight{padding:0;overflow:hidden}
+.scroll{overflow-x:auto}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.cards.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+.metric small{display:block}
+.metric-value{margin:4px 0 8px;min-height:38px;display:flex;align-items:center}
+.metric-value b{font-size:28px;letter-spacing:-.5px}
+.trend{height:40px}
+.trend-none{font-size:12px;color:#a2a9ac}
+.spark{width:100%;height:40px;display:block}
+.spark-line{fill:none;stroke:var(--accent);stroke-width:1.6;vector-effect:non-scaling-stroke}
+.spark-area{fill:#cc5d271a;stroke:none}
+.fail{display:flex;align-items:center;gap:8px;padding:26px 20px}
+
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:11px 16px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle;white-space:nowrap}
+th{background:#fafbfc;color:#5b6568;font-weight:600;white-space:normal;line-height:1.35}
+tbody tr:last-child td{border-bottom:0}
+th.n,td.n{text-align:right}
+td.center{text-align:center;padding:26px}
+th.group{text-align:center;border-bottom:1px solid var(--line)}
+th.sub-th{font-weight:500}
+.muted-row td{color:var(--muted);background:#fcfcfd}
+.thbtn{border:0;background:none;padding:0;font-weight:600;color:inherit}
+.thbtn:hover{background:none;color:var(--accent)}
+th.sorted .thbtn{color:var(--accent)}
+.app-icon{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;color:#fff;font-size:12px;margin-right:10px;vertical-align:middle}
+
+.badge{display:inline-block;border-radius:3px;padding:3px 7px;font-size:11px;background:#f0f3f3;color:#677579;white-space:nowrap}
+.badge.green{background:#eaf4ee;color:var(--green)}
+.badge.orange{background:#fff1e9;color:#b4562c}
+.badge.red{background:#fbece9;color:#b04f44}
+
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--line);margin-top:14px;overflow-x:auto}
+.tab{border:0;border-bottom:3px solid transparent;border-radius:0;background:none;padding:10px 22px;color:var(--muted);font-size:14px;white-space:nowrap}
+.tab:hover{background:none;color:var(--ink)}
+.tab.on{color:var(--ink);border-bottom-color:var(--ink);font-weight:700}
+.tab-title{font-size:26px;letter-spacing:-.5px;line-height:1.3;margin:22px 0 4px;padding-top:2px}
+.delta{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:-2px 0 8px;font-size:12px}
+.delta .up{color:var(--green);font-weight:650}
+.delta .down{color:#b8433a;font-weight:650}
+.delta .flat{color:#a2a9ac}
+.delta .split{display:inline-flex;gap:5px;align-items:baseline;color:var(--muted)}
+.defs{margin-top:34px;background:#fff;border:1px solid var(--line);border-left:4px solid var(--green);border-radius:8px;padding:16px 22px 14px;font-size:12px;color:#4d5659}
+.defs h3{font-size:14px;color:var(--ink)}
+.defs h4{font-size:12px;margin:14px 0 4px;color:var(--ink)}
+.defs ul{margin:0;padding-left:18px}
+.defs li{margin:3px 0;line-height:1.7}
+.defs li b{color:var(--ink);margin-right:6px}
+.defs code{font:11px/1.4 ui-monospace,Menlo,monospace;background:#f0f3f3;border-radius:3px;padding:1px 4px;color:#3b4649}
+
+.console{position:fixed;right:14px;bottom:14px;z-index:20;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.console-toggle{font-size:12px;padding:7px 12px;color:#777;border-radius:4px}
+.console-panel{width:270px;background:#f1f4f4;border:1px solid var(--line);border-radius:10px;padding:14px;box-shadow:0 6px 24px #00000018;font-size:12px}
+.console-panel h3{font-size:13px;margin-bottom:8px}
+.console-panel label{display:block;color:var(--muted)}
+.console-btns{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.console-btns button{font-size:12px}
+.console-state{list-style:none;margin:10px 0 0;padding:0;color:#5b6568}
+
+@media(min-width:1400px){.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.pair>div{min-width:0}.pair .cards.four{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1600px){.cards.all{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}}
+@media(max-width:900px){.shell{grid-template-columns:1fr}.sidebar{position:static;height:auto}.cards,.cards.four{grid-template-columns:repeat(2,minmax(0,1fr))}.content{padding:20px 16px 90px}}
+
+/* 图表 */
+.card.chart{padding:14px 20px 12px}
+.chart-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.chart-head select{width:auto;min-width:150px}
+.chart-svg{display:block;width:100%;height:auto;overflow:visible}
+.chart-svg .ct{font-size:12px;fill:#5b6568}
+.chart-svg .ct.muted,.chart-svg .cn.muted{fill:var(--muted)}
+.chart-svg .cn{font-size:13px;font-weight:600;fill:var(--ink)}
+.chart-svg .cv{font-size:13px;font-weight:700;fill:var(--ink)}
+.chart-svg .cv.sm{font-weight:600}
+.chart-svg .gridline{stroke:var(--line);stroke-width:1}
+.chart-svg .track{fill:#eef1f1}
+.chart-svg .seg-t{font-size:12px;font-weight:700;fill:#fff}
+.chart-svg .line-cur{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round}
+.chart-svg .line-prev{fill:none;stroke:#788184;stroke-width:2;stroke-dasharray:5 4;stroke-linejoin:round}
+.chart-svg .cross-line{stroke:#9aa3a6;stroke-width:1}
+.chart-svg .dot-cur{fill:var(--accent);stroke:#fff;stroke-width:2}
+.chart-svg .dot-prev{fill:#788184;stroke:#fff;stroke-width:2}
+.hrow{outline:none;cursor:default}
+.hrow-bg{fill:transparent}
+.hrow:hover .hrow-bg,.hrow:focus .hrow-bg{fill:#f6f9fc}
+.hrow:hover .hbar,.hrow:focus .hbar{opacity:.82}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:#5b6568;margin:2px 0 4px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i.sw{width:10px;height:10px;border-radius:2px;background:var(--c)}
+.legend i.ln{width:20px;height:0;border-top:2px solid var(--c)}
+.legend i.ln.dashed{border-top-style:dashed}
+.chart-empty{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;background:#fafbfc;border-radius:8px}
+.cellbar{display:inline-block;width:90px;height:8px;background:#eef1f1;border-radius:2px;vertical-align:middle;margin-right:10px;overflow:hidden}
+.cellbar i{display:block;height:100%;background:var(--accent);border-radius:0 2px 2px 0}
+.cellnum{display:inline-block;min-width:44px;text-align:right}
+.tip{position:fixed;z-index:30;display:none;pointer-events:none;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 11px;box-shadow:0 6px 20px #00000022;font-size:12px;line-height:1.7;max-width:320px}
+.tip-title{font-weight:700;color:var(--ink);margin-bottom:2px}
+.tip-row{color:#5b6568;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tip-row i{width:10px;height:3px;border-radius:2px;flex:none}
+.chart-svg .cross{pointer-events:none}
+
+/* 获取与推送各自使用操作数及分母。 */
+.flow-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.22fr);gap:20px;align-items:start}
+.flow-note{min-height:2.6em;margin:0 0 10px;color:#5b6568}
+.flow-card{padding:16px}
+.flow-stages{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px;margin-bottom:20px}
+.flow-stage{display:grid;align-content:start;gap:3px;padding:10px 12px;border-top:2px solid var(--accent);background:var(--wash);border-radius:0 0 6px 6px}
+.flow-stage span{font-size:13px;font-weight:650}
+.flow-stage b{font-size:24px;line-height:1.2;font-variant-numeric:tabular-nums}
+.flow-stage small,.flow-list-head small,.flow-row small{color:#5b6568}
+.flow-list-head{display:flex;justify-content:space-between;align-items:baseline;gap:4px 10px;flex-wrap:wrap;margin:0 0 6px}
+.flow-list-head h3{font-size:13px}
+.flow-breakdown + .flow-breakdown{margin-top:20px}
+.flow-breakdown ul{padding:0;margin:0;list-style:none}
+.flow-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(4.5ch,auto);column-gap:10px;align-items:baseline;padding:7px 0;border-top:1px solid var(--line);font-size:13px;font-variant-numeric:tabular-nums}
+.flow-row small{display:block;margin-top:2px}
+.flow-rate{text-align:right;color:#5b6568}
+.flow-meter{grid-column:1/-1;height:3px;margin-top:5px;border-radius:2px;background:#eef1f1;overflow:hidden}
+.flow-meter i{display:block;height:100%;background:#788184}
+.flow-meter .positive{background:var(--green)}
+.flow-meter .negative{background:var(--accent)}
+.flow-device{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:16px;padding-top:12px;border-top:1px solid var(--line);font-size:12px}
+.chart-scroll .chart-svg{min-width:760px}
+:where(button,select,.chart-scroll):focus-visible{outline:2px solid #235b98;outline-offset:2px}
+.chart-scroll:focus-visible{outline-offset:-2px}
+@media(max-width:1179px){.flow-grid{grid-template-columns:minmax(0,1fr);gap:0}.flow-note{min-height:0}}
+@media(max-width:900px){.sidebar{padding:12px 16px}.sidebar .navgroup{display:none}}
+@media(max-width:480px){
+  .seg{flex-wrap:wrap}
+  .controls{gap:8px}
+  .tab{padding-inline:9px}
+  .tab-title{font-size:22px}
+  .chart-head{flex-wrap:wrap}
+  .flow-card{padding:12px}
+  .flow-stages{grid-auto-flow:row;grid-auto-columns:auto}
+  .flow-stage{grid-template-columns:minmax(0,1fr) auto;align-items:baseline;border-top:0;border-left:2px solid var(--accent);border-radius:0 6px 6px 0}
+  .flow-stage small{grid-column:1/-1}
+  .metric{padding:12px}
+  .defs{overflow-wrap:anywhere}
+}
+@media(min-width:901px){.console{left:14px;right:auto;align-items:flex-start}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="console" class="console"></div>
+<script>// 样例数据：以「近 30 天」为基准；切换周期时由 app.js 按系数缩放，并保持自洽。
+// 所有比率（转化率、点击率、占比、人均 PV 等）都不在这里写，由 app.js 用人数和次数算出。
+const ASOF = '2026-11-15';
+
+const DATA = {
+  cn: {
+    // 页面浏览：[页面, PV 基数, UV 基数]
+    pages: [['home', 38600, 9800], ['app', 21400, 6400], ['story', 5900, 2300], ['search', 8200, 3100], ['owned', 7300, 2700]],
+    visitors: 11200, detailVisitors: 6150, got: 1420, accUsers: 355, tasks: 560,
+    // App 活跃用户数（沿用社区数据看板的数据，这里是样例）
+    active: 25000,
+    // 上一个等长周期（近 30 天基准）的样例值，用来算「较上期」
+    prev: { visitors: 10450, active: 24100, detail: 5720, got: 1310, acc: 372, tasks: 541, trialUsers: 810, trialSecs: 150, updTap: 88, updAcc: 70, updTasks: 99 },
+    // 曝光与点击：[位置, 曝光人数, 点击人数, 同日同位置同对象先曝光后点击的人数]
+    imp: [['banner', 5200, 740, 690], ['rec', 6400, 1150, 1090], ['list', 8900, 1320, 1270], ['storyCard', 1900, 430, 412], ['search', 2800, 980, 942], ['profile', 1200, 150, 142]],
+    // 详情来源：[来源, 详情访问人数, 新增获取量]
+    src: [['home', 2900, 630], ['article', 900, 200], ['search', 1150, 310], ['profile', 380, 60], ['owned', 520, 0], ['share', 610, 190], ['unknown', 140, 30]],
+    // 流程样例按操作计数。总量由互斥结果相加，概览按结果时间独立汇总。
+    acquisition: { newly: 1380, already: 82, failed: 64, returnedUnknown: 21, missing: 36 },
+    sends: {
+      newTask: 534, pending: 86, failed: 32, returnedUnknown: 12, missing: 18,
+      blocked: { noDevice: 62, unsupported: 27, disabled: 5, fwLow: 34, fwUnknown: 11, canceled: 71, unspecified: 24 }
+    },
+    trial: { users: 880, secs: 142 },
+    update: { tap: 96, acc: 81, tasks: 97 },
+    // 应用排行：[名称, 是否已上架, 详情热度, 详情访问人数, 试玩人数, 新增获取量, 新任务受理人数]；新增获取量合计 = got
+    apps: [
+      ['汉字拼图', true, 5200, 2480, 310, 345, 100], ['每日英语卡', true, 4300, 2050, 270, 280, 78], ['数独大师', true, 3600, 1720, 240, 212, 52],
+      ['古诗接龙', true, 2900, 1390, 170, 152, 34], ['书架整理助手', true, 2100, 1010, 60, 107, 30], ['番茄钟', true, 1800, 860, 40, 95, 26],
+      ['五子棋', true, 1500, 740, 120, 70, 14], ['单词消消乐', true, 1300, 630, 90, 60, 12], ['记账小本', true, 1000, 480, 30, 40, 9],
+      ['天气日历', false, 700, 330, 0, 25, 5], ['迷宫探险', true, 600, 290, 55, 20, 2], ['阅读打卡', false, 400, 190, 0, 14, 0]
+    ],
+    // 供给：[近 7 天, 近 30 天, 近 90 天]
+    supply: {
+      listed: 10, official: 3, third: 7, developers: 6, newly: [0, 2, 5], submitted: [3, 11, 27], approved: [2, 8, 20], rejected: [1, 2, 6],
+      prev: { listed: [10, 8, 7], official: [3, 3, 2], third: [7, 5, 5], developers: [6, 5, 5], newly: [1, 1, 3], submitted: [4, 9, 31], approved: [3, 6, 22], rejected: [1, 3, 7] }
+    },
+    top: [['数独', 612, 401], ['拼图', 540, 366], ['英语', 488, 330], ['围棋', 350, 241], ['五子棋', 331, 230], ['单词', 300, 214], ['记账', 270, 190], ['番茄钟', 255, 181], ['天气', 240, 172], ['古诗', 221, 160], ['日历', 201, 150], ['阅读', 180, 133], ['象棋', 170, 120], ['笔记', 150, 108], ['贪吃蛇', 131, 98]],
+    noRes: [['俄罗斯方块', 96, 71], ['扫雷', 88, 64], ['麻将', 75, 59], ['斗地主', 70, 52], ['涂色', 61, 44], ['日记', 55, 41], ['翻译', 49, 37], ['计算器', 44, 33], ['背单词本', 40, 30], ['听力', 36, 27], ['钢琴', 31, 23], ['闹钟', 27, 21], ['汇率', 24, 18], ['手电筒', 20, 16], ['抽奖', 17, 12]],
+    channels: ['微信好友', '朋友圈', 'QQ', 'QQ空间', '更多'],
+    // 分享：发起分享人数、复制链接成功、保存图片成功、各渠道点击次数、分享带来的访问人数
+    share: {
+      detail: { sharers: 410, copied: 220, saved: 96, taps: [180, 92, 31, 12, 58], visitors: 610 },
+      article: { sharers: 130, copied: 70, saved: 44, taps: [70, 40, 9, 4, 21], visitors: 240 }
+    }
+  },
+  os: {
+    pages: [['home', 15200, 4100], ['app', 8100, 2500], ['story', 2600, 950], ['search', 3300, 1250], ['owned', 2900, 1050]],
+    visitors: 4700, detailVisitors: 2380, got: 520, accUsers: 118, tasks: 200,
+    active: 12000,
+    prev: { visitors: 4900, active: 11400, detail: 2300, got: 480, acc: 125, tasks: 195, trialUsers: 330, trialSecs: 121, updTap: 33, updAcc: 27, updTasks: 36 },
+    imp: [['banner', 2100, 260, 246], ['rec', 2500, 420, 382], ['list', 3500, 430, 411], ['storyCard', 800, 140, 130], ['search', 1200, 390, 360], ['profile', 450, 45, 41]],
+    src: [['home', 1050, 215], ['article', 330, 65], ['search', 500, 110], ['profile', 120, 15], ['owned', 180, 0], ['share', 420, 100], ['unknown', 90, 15]],
+    acquisition: { newly: 502, already: 31, failed: 24, returnedUnknown: 9, missing: 12 },
+    sends: {
+      newTask: 188, pending: 29, failed: 15, returnedUnknown: 5, missing: 9,
+      blocked: { noDevice: 31, unsupported: 14, disabled: 2, fwLow: 12, fwUnknown: 6, canceled: 22, unspecified: 8 }
+    },
+    trial: { users: 310, secs: 118 },
+    update: { tap: 38, acc: 30, tasks: 34 },
+    apps: [
+      ['Chess Puzzles', true, 2300, 1050, 140, 128, 34], ['Word Ladder', true, 1900, 880, 120, 105, 26], ['Sudoku Zen', true, 1500, 720, 105, 82, 20],
+      ['Daily Flashcards', true, 1200, 560, 75, 63, 16], ['Pomodoro Timer', true, 900, 430, 20, 45, 14], ['Reading Log', true, 700, 330, 25, 38, 11],
+      ['Minesweeper', true, 600, 280, 55, 20, 4], ['Expense Notes', true, 480, 220, 12, 15, 3], ['Tic-Tac-Toe Plus', true, 350, 170, 40, 10, 1],
+      ['Weather Calendar', false, 260, 120, 0, 9, 2], ['Maze Runner', false, 190, 95, 18, 5, 0]
+    ],
+    supply: {
+      snapshot: '2026-11-16', listed: 9, official: 2, third: 7, developers: 6, newly: [1, 2, 4], submitted: [2, 7, 19], approved: [1, 5, 14], rejected: [1, 1, 4],
+      prev: { listed: [9, 8, 6], official: [2, 2, 2], third: [7, 6, 4], developers: [6, 5, 4], newly: [0, 1, 2], submitted: [3, 8, 16], approved: [2, 6, 11], rejected: [1, 2, 4] }
+    },
+    top: [['sudoku', 240, 160], ['chess', 215, 150], ['word game', 198, 141], ['timer', 160, 117], ['flashcards', 140, 101], ['puzzle', 131, 95], ['pomodoro', 120, 88], ['weather', 105, 80], ['calendar', 96, 72], ['reading', 88, 66], ['notes', 80, 60], ['tic tac toe', 72, 55], ['maze', 66, 50], ['expense', 58, 44], ['minesweeper', 52, 40]],
+    noRes: [['tetris', 44, 33], ['solitaire', 40, 30], ['crossword', 36, 27], ['translator', 33, 25], ['piano', 29, 22], ['calculator', 26, 20], ['mahjong', 23, 18], ['snake', 21, 16], ['diary', 19, 14], ['alarm', 17, 13], ['flashlight', 15, 11], ['currency', 13, 10], ['habit tracker', 12, 9], ['drawing', 10, 8], ['quiz', 9, 7]],
+    channels: ['WhatsApp', 'Facebook', '更多'],
+    share: {
+      detail: { sharers: 160, copied: 95, saved: 38, taps: [74, 28, 31], visitors: 420 },
+      article: { sharers: 52, copied: 30, saved: 14, taps: [28, 11, 12], visitors: 130 }
+    }
+  }
+};
+</script>
+<script>// 口径说明文案（R-09）：内容摘自 PRD 第 3 节，事件名照抄。每条 [名称, 说明]，反引号里的是事件或字段。
+const DEFS_COMMON = [
+  ['通用', [
+    ['用户标识与排除', '登录用户用账号 `userid`，未登录用游客 ID，不跨环境合并；审核账号、作者操作自己的应用的事件全部排除。'],
+    ['人数与次数', '人数 = 周期内用户标识去重，不是每天人数相加；次数 = 周期内事件条数，不去重。日界国内按 UTC+8、海外按 UTC。']
+  ]]
+];
+
+const DELTA_DEF = ['较上期', '和上一个等长周期比（近 30 天比再往前 30 天）；人数、次数显示涨跌百分比，率显示涨跌百分点（pp）；上期为 0，或当期为「暂无数据」「未接入」时显示「—」。表格里的数不加较上期。'];
+
+const DEFS = {
+  overview: [
+    ['汇总', [
+      ['轻应用访客数', '进过下方「页面浏览」表里任一页面的用户标识，周期内跨页面去重。'],
+      ['轻应用渗透率', '轻应用访客数 ÷ 同周期 App 活跃用户数（周期内去重，按上面的日界）；App 活跃用户数沿用社区数据看板「App 活跃用户数」的口径和数据。'],
+      ['详情访问人数', '`detail_page_check`，`content_result`=正常；人数去重。'],
+      ['新增获取量', '`acquire_result`，`acquire_result`=新增获取；按账号 × 应用去重。'],
+      ['新任务受理人数', '`push_task_result`，`acceptance_result`=新任务已受理；按账号去重。'],
+      ['新建推送任务数', '同上；按 `task_id` 去重。'],
+      ['设备安装人数', '固件做不到埋点，固定显示「未接入」。'],
+      ['趋势', '每天按对应指标口径计算。渗透率每天用当日访客数除以当日 App 活跃用户数。缺值或分母为零时断线。'],
+      DELTA_DEF
+    ]],
+    ['页面浏览', [
+      ['PV', '页面曝光事件的条数，每次页面成功显示记 1 次；加载失败、超时不记。'],
+      ['UV', '有过该页面曝光事件的用户标识去重数；周期 UV 在整个周期内去重，不是每天 UV 相加。'],
+      ['人均 PV、日均 UV', '人均 PV = PV ÷ UV；日均 UV = 周期内每天 UV 之和 ÷ 周期天数。'],
+      ['轻应用首页', '`home_page_check`，首页应用内容成功显示时记 1 次。'],
+      ['应用详情', '`detail_page_check`，按 `page_visit_id` 去重，含已下架状态页；只算 App。'],
+      ['精选文章', '`article_page_check`，按 `page_visit_id` 去重，含已下架状态页。'],
+      ['搜索结果', '`search_result_check`，`search_scope`=商店；按 `search_id` 去重，每次搜索记 1 次。'],
+      ['已获取', '`owned_page_check`，按页面访问去重。']
+    ]]
+  ],
+
+  discovery: [
+    ['曝光与点击', [
+      ['曝光人数、点击人数', '做过该位置曝光事件、点击事件的用户标识去重数。'],
+      ['点击率', '同日、同一位置、同一对象先曝光后点击的用户，按周期去重 ÷ 周期去重曝光人数。'],
+      ['首页横幅', '`featured_banner_check` / `featured_banner_click`，按 `article_id`。'],
+      ['推荐位', '`app_card_check` / `app_card_click`，`scene`=home，`card_type`=推荐，按 `recommendation_id` + `light_app_id`。'],
+      ['首页普通列表', '同上事件，`scene`=home，`card_type`=普通，按 `light_app_id`。'],
+      ['精选文章应用卡', '同上事件，`scene`=article，按 `article_id` + `light_app_id`。'],
+      ['搜索结果', '同上事件，`scene`=search，按 `light_app_id`。'],
+      ['个人主页', '同上事件，`scene`=profile，按 `light_app_id`。']
+    ]],
+    ['详情来源', [
+      ['详情访问人数', '`detail_page_check` 的人数，按 `entry_source` 分行：首页=home，精选文章=article，搜索=search，个人主页=profile，已获取=owned、owned_search，外部分享=external_share，未知=unknown、空值。'],
+      ['新增获取量', '`acquire_result`=新增获取，按账号 × 应用去重。取同一操作的详情页 `acquire_click.entry_source`。缺来源或关联不到点击时归入未知。']
+    ]],
+    ['搜索词', [
+      ['范围', '只取商店搜索：`search_start`、`search_result_check` 的 `search_scope`=商店，两者按 `search_id` 关联。大小写等价词合并后重新去重计算人数。空关键词处理待确认。'],
+      ['热门搜索词', '搜索词取 `keyword`；搜索次数 = 搜索条数，搜索人数 = 去重人数；按搜索人数倒序，前 50。'],
+      ['无结果搜索词', '无结果次数 = `total_count`=0 的次数；按无结果次数倒序，前 50。']
+    ]],
+    ['分享', [
+      ['范围', '只看 App 客户端：取 `share_scene` 为 `light_app_detail`（应用详情）、`featured_article`（精选文章）的 `app_share_*` 事件，每个场景一行。App 拿不到分享回调，这一块的数只表示用户在 App 里做了什么，不代表分享成功或对方打开；分享页在浏览器里的打开首期不统计。'],
+      ['发起分享人数', '`app_share_entry_click` 人数。'],
+      ['复制链接成功', '`app_share_copy_result` 成功、`copy_type`=链接 的次数。'],
+      ['保存图片成功', '`app_share_save_image_result` 成功的次数。'],
+      ['选择渠道次数', '`app_share_channel_click` 按 `share_channel` 分列次数；`app_share_more_click` 记为「更多」。图旁注明「不代表分享成功」。'],
+      ['从分享链接打开 App 的人数', '应用详情行取 `detail_page_check`，精选文章行取 `article_page_check`，都限 `entry_source`=external_share；只含从分享链接跳进 App 的，在浏览器里看的不含。']
+    ]]
+  ],
+
+  getsend: [
+    ['获取资格与设备推送', [
+      ['操作数', '按环境、账号、应用和 `operation_id` 去重。取本期发起的操作，后续事件须为本期同一次操作并按顺序发生。'],
+      ['获取资格', '仅统计应用详情页的 `acquire_click`。新增获取成功率 = 新增获取成功的操作数 ÷ 发起获取操作数。结果取同一次操作的 `acquire_result`。'],
+      ['设备推送', '`push_entry_click` 发起，`push_submit` 提交，`push_task_result` 返回服务端结果。已有待下载任务计入提交结果。提交率 = 提交 ÷ 发起。新任务受理率 = 新任务受理 ÷ 提交。'],
+      ['提交前未完成', '按未提交的推送操作统计。原因来自 `push_device_block` 或 `push_device_cancel`，以发起推送为分母。'],
+      ['明确失败与结果未知', '明确失败按 `failure_reason` 拆分。明确返回未知与无可关联结果的操作同归「结果未知」，明细分别展示。'],
+      ['设备接收、安装、首次运行', '固定显示「未接入」。']
+    ]],
+    ['试玩与更新', [
+      ['试玩人数', '`trial_start` 去重人数。'],
+      ['平均试玩时长', '`trial_end_stay.duration` 的平均值，单位秒。'],
+      ['点更新人数', '`update_entry_click` 去重人数。'],
+      ['更新受理人数与任务', '取 `update_task_result`=新任务已受理，按账号与 `task_id` 分别去重。'],
+      DELTA_DEF
+    ]]
+  ],
+
+  apps: [
+    ['应用排行', [
+      ['范围', '每行一个周期内有数据的应用，以下都按 `light_app_id` 汇总；默认按新增获取量倒序，可点列头切换排序。'],
+      ['应用、状态', '名称、图标和周期末状态（已上架、已下架）来自应用表。'],
+      ['详情热度', '`detail_page_check` 次数，仅 App。'],
+      ['详情访问人数', '`detail_page_check` 人数。'],
+      ['试玩人数', '`trial_start` 人数。'],
+      ['新增获取量', '`acquire_result`=新增获取；按账号 × 应用去重。'],
+      ['新任务受理人数', '`push_task_result`，`acceptance_result`=新任务已受理；按账号去重。'],
+    ]],
+    ['供给', [
+      ['数据来源', '取自业务库（应用表、审核记录），不用埋点。'],
+      ['在架应用', '周期末状态为已上架的应用数。缺历史快照时展示当前在架和快照日期。'],
+      ['官方 / 第三方', '在架应用按开发者账号拆分；官方账号名单由运营提供。'],
+      ['新上架', '首次上架时间在周期内的应用数。'],
+      ['在架开发者', '同一在架快照内涉及的开发者账号去重数。'],
+      ['提交审核', '提交时间在周期内的审核次数。'],
+      ['审核通过、审核驳回、审核中', '上述提交中，到周期末结果为通过、驳回、还没出结果的次数，三者相加等于提交审核。'],
+      DELTA_DEF
+    ]]
+  ]
+};
+</script>
+<script>// 轻应用数据看板 Demo：模型（按周期和环境算数）+ 渲染 + 交互
+const FP = { 7: 0.28, 30: 1, 90: 2.65 }; // 人数（去重）的周期系数
+const FC = { 7: 0.26, 30: 1, 90: 2.8 };  // 次数的周期系数
+const FA = { 7: 0.55, 30: 1, 90: 1.9 };  // App 活跃用户数的周期系数（周期越长越接近饱和）
+const PW = { 7: 1.05, 30: 1, 90: 0.96 }; // 上期相对本期的样例波动，让不同周期的涨跌有差异
+const BLOCKS = [
+  ['summary', '汇总'], ['source', '发现来源'], ['acquisition', '获取资格'], ['sends', '设备推送'], ['trial', '试玩'], ['update', '更新'],
+  ['rank', '应用排行'], ['supply', '供给'], ['search', '搜索词'], ['share', '分享']
+];
+// 页签：[标识, 名称, 问题式标题, 包含的块]
+const TABS = [
+  ['overview', '概览', '轻应用触达了多少 App 用户', ['summary']],
+  ['discovery', '发现来源', '用户是从哪里发现应用的', ['source', 'search', 'share']],
+  ['getsend', '获取与推送', '获取资格和推送分别在哪一步卡住', ['acquisition', 'sends', 'trial', 'update']],
+  ['apps', '应用与供给', '哪些应用最受欢迎，在架供给跟得上吗', ['rank', 'supply']]
+];
+
+const state = {
+  tab: 'overview', period: 30, env: 'cn',
+  failed: {}, empty: {},
+  sort: { key: 'got', dir: 'desc' }, trend: 'visitors'
+};
+
+const fmt = n => n.toLocaleString('zh-CN');
+const sum = a => a.reduce((s, x) => s + x, 0);
+
+// ---------- 样例日序列（同一日期使用同一波动权重） ----------
+function hash(s) {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return ((h >>> 0) % 10000) / 10000;
+}
+function dayBack(i) {
+  const day = new Date(ASOF);
+  day.setUTCDate(day.getUTCDate() - i);
+  return day;
+}
+function daily(key, avg, n, off = 0) {
+  const out = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const d = dayBack(i + off);
+    const shape = 1 + 0.18 * Math.sin(d.getUTCDay() * Math.PI * 2 / 7 + hash(key) * 6) + (hash(key + d.toISOString()) - 0.5) * 0.3;
+    out.push({ date: d.toISOString().slice(0, 10), v: Math.max(0, Math.round(avg * shape)) });
+  }
+  return out;
+}
+// 按权重拆分，合计等于 total（最大余数法）
+function split(total, weights) {
+  const w = sum(weights);
+  if (!total || !w) return weights.map(() => 0);
+  const raw = weights.map(x => total * x / w), base = raw.map(Math.floor);
+  let left = total - sum(base);
+  raw.map((r, i) => [r - base[i], i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if (left-- > 0) base[i]++; });
+  return base;
+}
+
+// ---------- 模型：所有比率在这里由人数、次数算出 ----------
+function model(env, p, empty) {
+  const D = DATA[env], N = p;
+  const sc = blk => {
+    const z = !!empty[blk];
+    return { z, P: v => (z ? 0 : Math.round(v * FP[p])), C: v => (z ? 0 : Math.round(v * FC[p])) };
+  };
+  const M = {};
+
+  // 3.2 汇总（prev 是上期值，不受本块的空周期模拟影响）
+  let S = sc('summary');
+  const pre = D.prev, Pp = v => Math.round(v * FP[p] * PW[p]), Cp = v => Math.round(v * FC[p] * PW[p]);
+  const au = Math.round(D.active * FA[p]), auPrev = Math.round(pre.active * FA[p] * PW[p]);
+  const visitors = S.P(D.visitors);
+  const ser = (k, v, offset = 0) => daily(env + ':' + k, v * 1.6 / 30, N, offset);
+  const additive = (k, total, offset = 0) => {
+    const days = daily(env + ':' + k, D[k] / 30, N, offset);
+    const counts = split(total, days.map(day => day.v));
+    return days.map((day, i) => ({ ...day, v: counts[i] }));
+  };
+  M.cards = [
+    { k: 'visitors', v: visitors, series: ser('visitors', S.z ? 0 : D.visitors), prev: Pp(pre.visitors), kind: 'count' },
+    { k: 'penetration', v: visitors / au, prev: Pp(pre.visitors) / auPrev, kind: 'rate' }, // 渗透率 = 访客数 ÷ App 活跃用户数，由数算出
+    { k: 'detail', v: S.P(D.detailVisitors), series: ser('detail', S.z ? 0 : D.detailVisitors), prev: Pp(pre.detail), kind: 'count' },
+    { k: 'got', v: S.C(D.got), series: additive('got', S.C(D.got)), prev: Cp(pre.got), kind: 'count' },
+    { k: 'acc', v: S.P(D.accUsers), series: ser('acc', S.z ? 0 : D.accUsers), prev: Pp(pre.acc), kind: 'count' }
+  ];
+  const taskTotal = S.C(D.tasks);
+  const taskPrev = Cp(pre.tasks);
+  M.cards.push({ k: 'tasks', v: taskTotal, series: additive('tasks', taskTotal), prev: taskPrev, kind: 'count' });
+  M.cards.push({ k: 'install', v: null, series: null, prev: null, kind: 'count' });
+  const prevSer = (k, v) => ser(k + ':prev', v, N);
+  const penetration = (visits, active) => visits.map((day, i) => {
+    // 演示单日活跃分母缺数，周期卡使用独立的周期汇总样例。
+    const missing = env === 'cn' && day.date === '2026-11-12';
+    return { date: day.date, v: !missing && active[i].v > 0 ? day.v / active[i].v : null };
+  });
+  const cardOf = k => M.cards.find(c => c.k === k);
+  const vis = cardOf('visitors'), visPrevSer = prevSer('visitors', pre.visitors);
+  const dailyActive = ser('active', D.active);
+  const rateSeries = penetration(vis.series, dailyActive);
+  cardOf('penetration').series = rateSeries;
+  M.trend = {
+    visitors: { cur: vis.series, prev: visPrevSer, kind: 'count' },
+    penetration: { cur: rateSeries, prev: penetration(visPrevSer, prevSer('active', pre.active)), kind: 'rate' },
+    detail: { cur: cardOf('detail').series, prev: prevSer('detail', pre.detail), kind: 'count' },
+    got: { cur: cardOf('got').series, prev: additive('got', Cp(pre.got), N), kind: 'count' },
+    acc: { cur: cardOf('acc').series, prev: prevSer('acc', pre.acc), kind: 'count' },
+    tasks: { cur: cardOf('tasks').series, prev: additive('tasks', taskPrev, N), kind: 'count' }
+  };
+  M.pages = D.pages.map(([k, pv, uv]) => {
+    const pvs = daily(env + ':pv:' + k, S.z ? 0 : pv / 30, N), uvs = ser('uv:' + k, S.z ? 0 : uv);
+    return { k, pv: sum(pvs.map(x => x.v)), uv: S.P(uv), avgUv: (sum(uvs.map(x => x.v)) / N).toFixed(2) };
+  });
+
+  // 3.3 发现来源
+  S = sc('source');
+  M.imp = D.imp.map(([k, v, c, matched]) => ({ k, viewers: S.P(v), clickers: S.P(c), matched: S.P(matched) }));
+  const gots = split(S.C(D.got), D.src.map(r => r[2]));
+  M.src = D.src.map(([k, v], i) => ({ k, visitors: S.P(v), got: gots[i] }));
+
+  // 3.4 获取资格、设备推送（按互斥的操作结果汇总）
+  const counts = (rows, scale) => Object.fromEntries(Object.entries(rows).map(([k, v]) => [k, scale(v)]));
+  S = sc('acquisition');
+  const get = counts(D.acquisition, S.C);
+  M.acquisition = { ...get, attempts: sum(Object.values(get)) };
+
+  S = sc('sends');
+  const { blocked, ...outcomes } = D.sends;
+  const results = counts(outcomes, S.C);
+  const reasons = counts(blocked, S.C);
+  const submitted = sum(Object.values(results));
+  M.sends = { ...results, submitted, attempts: submitted + sum(Object.values(reasons)), reasons };
+
+  S = sc('trial');
+  const secsK = { 7: 0.97, 30: 1, 90: 1.02 }[p];
+  M.trial = { users: S.P(D.trial.users), secs: S.P(D.trial.users) ? Math.round(D.trial.secs * secsK) : null,
+    prev: { users: Pp(pre.trialUsers), secs: Math.round(pre.trialSecs * secsK) } };
+  S = sc('update');
+  M.update = { tap: S.P(D.update.tap), acc: S.P(D.update.acc), tasks: S.C(D.update.tasks), prev: { tap: Pp(pre.updTap), acc: Pp(pre.updAcc), tasks: Cp(pre.updTasks) } };
+
+  // 3.5 应用排行（新增获取量合计 = 汇总的新增获取量）
+  S = sc('rank');
+  const rg = split(S.C(D.got), D.apps.map(a => a[5]));
+  M.apps = D.apps.map(([name, listed, pv, uv, trial, , push], i) => ({
+    name, listed, pv: S.C(pv), uv: S.P(uv), trial: S.P(trial), got: rg[i], pushed: S.P(push)
+  })).filter(a => a.pv || a.uv || a.trial || a.got || a.pushed);
+
+  // 3.6 供给（来自业务库，周期只影响「周期内」的几项）
+  S = sc('supply');
+  const si = { 7: 0, 30: 1, 90: 2 }[p], sp = D.supply;
+  M.supply = {
+    snapshot: sp.snapshot || ASOF, currentOnly: Boolean(sp.snapshot),
+    listed: sp.listed, official: sp.official, third: sp.third, developers: sp.developers,
+    newly: S.z ? 0 : sp.newly[si], submitted: S.z ? 0 : sp.submitted[si], approved: S.z ? 0 : sp.approved[si], rejected: S.z ? 0 : sp.rejected[si],
+    prev: Object.fromEntries(Object.entries(sp.prev).map(([k, a]) => [k, a[si]]))
+  };
+
+  // 3.7 搜索词
+  S = sc('search');
+  const kw = list => list.map(([w, times, users]) => ({ w, times: S.C(times), users: Math.min(S.C(times), S.P(users)) })).filter(r => r.times > 0);
+  M.top = kw(D.top).sort((a, b) => b.users - a.users).slice(0, 50);
+  M.noRes = kw(D.noRes).sort((a, b) => b.times - a.times).slice(0, 50);
+
+  // 3.8 分享
+  S = sc('share');
+  const sh = s => ({ sharers: S.P(s.sharers), copied: S.C(s.copied), saved: S.C(s.saved), taps: s.taps.map(S.C), visitors: S.P(s.visitors) });
+  M.share = { detail: sh(D.share.detail), article: sh(D.share.article) };
+  return M;
+}
+
+// ---------- 显示名 ----------
+const PAGE_NAMES = { home: '轻应用首页', app: '应用详情', story: '精选文章', search: '搜索结果', owned: '已获取' };
+const IMP_NAMES = { banner: '首页横幅', rec: '推荐位', list: '首页普通列表', storyCard: '精选文章应用卡', search: '搜索结果', profile: '个人主页' };
+const SRC_NAMES = { home: '轻应用首页', article: '精选文章', search: '搜索', profile: '个人主页', owned: '已获取', share: '外部分享', unknown: '未知' };
+const CARD_NAMES = {
+  visitors: '轻应用访客数', penetration: '轻应用渗透率', detail: '详情访问人数', got: '新增获取量',
+  acc: '新任务受理人数', tasks: '新建推送任务数', install: '设备安装人数'
+};
+const REASON_NAMES = {
+  noDevice: '没有设备', unsupported: '型号不支持', disabled: '型号已停用', fwLow: '固件过低',
+  fwUnknown: '固件版本未知', canceled: '取消选择设备', unspecified: '未注明原因'
+};
+const RANK_COLS = [
+  ['pv', '详情热度'], ['uv', '详情访问人数'], ['trial', '试玩人数'],
+  ['got', CARD_NAMES.got], ['pushed', CARD_NAMES.acc]
+];
+
+// ---------- 小部件 ----------
+const badge = (label, cls = '') => `<span class="badge ${cls}">${label}</span>`;
+const noData = () => badge('暂无数据');
+const notConnected = () => badge('未接入');
+const num = n => fmt(n);
+const pct = (a, b) => (b === 0 ? noData() : (a / b * 100).toFixed(1) + '%');
+
+// 较上期：人数、次数 ±x.x%，率 ±x.x pp；上期为 0 或当期没有数时显示「—」
+function deltaParts(cur, prev, kind) {
+  if (cur === null || prev === null || prev === 0 || Number.isNaN(cur)) return ['flat', '—'];
+  const d = kind === 'rate' ? (cur - prev) * 100 : (cur - prev) / prev * 100, unit = kind === 'rate' ? ' pp' : '%';
+  if (d.toFixed(1) === '0.0' || d.toFixed(1) === '-0.0') return ['flat', `0.0${unit}`];
+  return [d > 0 ? 'up' : 'down', `${d > 0 ? '▲ +' : '▼ -'}${Math.abs(d).toFixed(1)}${unit}`];
+}
+const deltaCell = (cur, prev, kind) => { const [c, t] = deltaParts(cur, prev, kind); return `<span class="${c}">${t}</span>`; };
+const vsLabel = () => `<small>较上期</small>`;
+function metric(label, value, delta, extra = '') {
+  return `<div class="card metric"><small>${label}</small><div class="metric-value">${value}</div>${delta === null ? '' : `<div class="delta">${delta}${vsLabel()}</div>`}${extra}</div>`;
+}
+
+function seriesPath(days, x, y) {
+  return days.map(({ v }, i) => v === null ? '' :
+    `${i && days[i - 1].v !== null ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
+}
+
+function spark(series, kind) {
+  const W = 200, H = 40, values = series.map(x => x.v).filter(v => v !== null);
+  if (!values.length) return noData();
+  const max = Math.max(...values), min = Math.min(...values);
+  const X = i => i * W / Math.max(series.length - 1, 1);
+  const Y = v => H - 4 - (v - min) / (max - min || 1) * (H - 10);
+  const line = seriesPath(series, X, Y);
+  const area = values.length === series.length ? `<path d="${line}L${W},${H}H0Z" class="spark-area"/>` : '';
+  const hit = W / series.length;
+  const bars = series.map((s, i) => {
+    const value = s.v === null ? '暂无数据' : kind === 'rate' ? (s.v * 100).toFixed(1) + '%' : fmt(s.v);
+    return `<rect x="${(i * hit).toFixed(1)}" y="0" width="${hit.toFixed(1)}" height="${H}" fill="transparent"><title>${s.date} · ${value}</title></rect>`;
+  }).join('');
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="按天趋势">
+    ${area}<path d="${line}" class="spark-line"/>${bars}</svg>`;
+}
+
+function block(key, body) {
+  const [, label] = BLOCKS.find(b => b[0] === key);
+  const head = `<div class="block-head"><h2>${label}</h2></div>`;
+  if (state.failed[key]) {
+    return `<section class="block" data-block="${key}">${head}<div class="card fail">${badge('读取失败', 'red')}
+      <button class="link" data-act="retry" data-v="${key}">重试</button></div></section>`;
+  }
+  return `<section class="block" data-block="${key}">${head}${body}</section>`;
+}
+const tableWrap = html => `<div class="card tight"><div class="scroll">${html}</div></div>`;
+const sub = label => `<h3 class="sub">${label}</h3>`;
+
+// ---------- 图表（手写 SVG，无外部库）----------
+// 配色：本期/主序列用页面主色（橙），第二序列用蓝，上期用灰色虚线；状态色只用于通过/驳回，且图内有文字标注
+const CH = { accent: '#cc5d27', blue: '#2a78d6', green: '#317455', red: '#b8433a', prev: '#788184', W: 960 };
+// 图表画布宽度随内容区伸缩：不小于 760（窄屏可横向滚动），宽屏按卡片内宽取值，文字不被拉伸
+function calcW() {
+  const vw = document.documentElement.clientWidth;
+  return Math.max(760, Math.round((vw > 900 ? vw - 210 - 60 : vw - 32) - 42));
+}
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+// 悬停提示：lines = [[文字, 色块颜色?], ...]，第一行是标题；渲染时用 textContent 写入
+const tipAttr = lines => `data-tip="${esc(JSON.stringify(lines))}" tabindex="0"`;
+const dash = '—';
+const pctTxt = (a, b) => (b === 0 ? '暂无数据' : (a / b * 100).toFixed(1) + '%');
+const chartScroll = html => `<div class="scroll chart-scroll" tabindex="0" aria-label="图表">${html}</div>`;
+const chartEmpty = h => `<div class="chart-empty" style="min-height:${h}px">暂无数据</div>`;
+const legend = items => `<div class="legend">${items.map(([label, c, kind]) => `<span><i class="${kind || 'sw'}" style="--c:${c}"></i>${label}</span>`).join('')}</div>`;
+const compact = v => (v >= 10000 ? Math.round(v / 1000) + 'k' : v >= 1000 ? (v / 1000).toFixed(1).replace('.0', '') + 'k' : String(Math.round(v)));
+function niceMax(m) {
+  if (m <= 0) return 1;
+  const e = Math.pow(10, Math.floor(Math.log10(m))), f = m / e;
+  return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * e;
+}
+// 条尾圆角 4px、起点贴基线
+function barPath(x, y, w, h) {
+  const r = Math.min(4, w / 2, h / 2);
+  return `M${x},${y}h${w - r}a${r},${r} 0 0 1 ${r},${r}v${h - 2 * r}a${r},${r} 0 0 1 ${-r},${r}H${x}Z`;
+}
+
+// 趋势图：本期实线、上期虚线，横轴按天；悬停显示十字线和两期的值
+let trendStore = null;
+function trendChart(t, name) {
+  const n = t.cur.length, W = CH.W, H = 300, L = 56, R = 18, Tp = 14, B = 32, pw = W - L - R, ph = H - Tp - B;
+  const fmtV = v => v === null ? '暂无数据' : t.kind === 'rate' ? (v * 100).toFixed(1) + '%' : num(v);
+  const axisV = v => (t.kind === 'rate' ? (v * 100).toFixed(v * 100 < 10 ? 1 : 0) + '%' : compact(v));
+  const mx = niceMax(Math.max(...t.cur.map(x => x.v), ...t.prev.map(x => x.v)));
+  const X = i => (n > 1 ? L + i * pw / (n - 1) : L + pw / 2), Y = v => Tp + ph - v / mx * ph;
+  const grid = [0, 1, 2, 3, 4].map(k => {
+    const v = mx * k / 4, y = Y(v).toFixed(1);
+    return `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" class="gridline"/><text x="${L - 8}" y="${(+y + 4)}" class="ct" text-anchor="end">${axisV(v)}</text>`;
+  }).join('');
+  const segs = Math.min(n - 1, 6) || 1, ticks = [...new Set(Array.from({ length: segs + 1 }, (_, k) => Math.round(k * (n - 1) / segs)))];
+  const xl = ticks.map(i => `<text x="${X(i).toFixed(1)}" y="${H - 10}" class="ct" text-anchor="middle">${t.cur[i].date.slice(5)}</text>`).join('');
+  trendStore = { n, L, pw, W, Y, X, t, name, fmtV };
+  return `<svg class="chart-svg trend" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(name)}">${grid}${xl}
+    <path d="${seriesPath(t.prev, X, Y)}" class="line-prev"/><path d="${seriesPath(t.cur, X, Y)}" class="line-cur"/>
+    <g class="cross" style="display:none"><line y1="${Tp}" y2="${Tp + ph}" class="cross-line"/><circle r="4" class="dot-prev"/><circle r="4" class="dot-cur"/></g>
+    <rect class="trend-hit" x="${L}" y="${Tp}" width="${pw}" height="${ph}" fill="transparent"/></svg>`;
+}
+
+// 横向条形图。rows: [{name, bars:[{v, color}], cols:[文字], tip}]；o: {nameHead, colHeads, colsW, max, nameW}
+function hbars(rows, o) {
+  const W = CH.W, nameW = o.nameW || 170, colsW = o.colsW || [], colsT = sum(colsW), valW = 64;
+  const plotX = nameW, plotW = W - nameW - colsT - valW - 8, barH = 14, gap = 3, headH = o.colHeads || o.plotHead ? 30 : 6;
+  const mx = o.max || Math.max(...rows.flatMap(r => r.bars.map(b => b.v)), 1);
+  let y = headH, body = '';
+  const colX = k => W - sum(colsW.slice(k + 1)); // 第 k 列右边缘
+  const head = o.colHeads || o.plotHead ? `<text x="0" y="18" class="ct muted">${esc(o.nameHead || '')}</text><text x="${plotX}" y="18" class="ct muted">${esc(o.plotHead || '')}</text>${(o.colHeads || []).map((h, k) => `<text x="${colX(k)}" y="18" class="ct muted" text-anchor="end">${esc(h)}</text>`).join('')}
+    <line x1="0" x2="${W}" y1="${headH - 2}" y2="${headH - 2}" class="gridline"/>` : '';
+  rows.forEach(r => {
+    const rh = r.bars.length * (barH + gap) - gap + 22, by = y + 11;
+    const bars = r.bars.map((b, i) => {
+      const w = b.v > 0 ? Math.max(2, b.v / mx * plotW) : 0, yy = by + i * (barH + gap);
+      return `<rect x="${plotX}" y="${yy}" width="${plotW}" height="${barH}" rx="4" class="track"/>${w ? `<path d="${barPath(plotX, yy, w, barH)}" class="hbar" fill="${b.color}"/>` : ''}
+        <text x="${plotX + plotW + 8}" y="${yy + barH - 3}" class="cv">${num(b.v)}</text>`;
+    }).join('');
+    const cols = (r.cols || []).map((c, k) => `<text x="${colX(k)}" y="${y + rh / 2 + 5}" class="cv${k ? ' sm' : ''}" text-anchor="end">${esc(c)}</text>`).join('');
+    body += `<g class="hrow" ${tipAttr(r.tip)}><rect class="hrow-bg" x="0" y="${y}" width="${W}" height="${rh}"/>
+      <text x="0" y="${y + rh / 2 + 5}" class="cn">${esc(r.name)}</text>${bars}${cols}</g><line x1="0" x2="${W}" y1="${y + rh}" y2="${y + rh}" class="gridline"/>`;
+    y += rh;
+  });
+  return `<svg class="chart-svg" viewBox="0 0 ${W} ${y}" role="img">${head}${body}</svg>`;
+}
+
+// 堆叠条：一行一根，段间留 2px 缝；track=true 时底下铺灰色轨道，轨道长度 = 总量，各段之和不足总量时看得出差额
+let clipId = 0;
+function stackBars(rows) {
+  const W = CH.W, nameW = 170, plotX = nameW, plotW = W - nameW - 120, bh = 30, rh = 62;
+  const out = rows.map((r, ri) => {
+    const y = ri * rh + 16, cid = 'sb' + (clipId++);
+    let inner = '';
+    if (r.total > 0) {
+      let x = plotX;
+      const parts = r.segs.filter(s => s.v > 0);
+      inner = (r.track ? `<rect x="${plotX}" y="${y}" width="${plotW}" height="${bh}" class="track"/>` : '') + parts.map((s, k) => {
+        const w = s.v / r.total * plotW, gx = x; x += w;
+        const label = w >= 70 ? `<text x="${gx + w / 2}" y="${y + bh / 2 + 4}" class="seg-t" text-anchor="middle">${esc(s.name)} ${num(s.v)}</text>` : '';
+        return `<g class="hrow" ${tipAttr(s.tip)}><rect x="${gx}" y="${y}" width="${Math.max(w - (k < parts.length - 1 ? 2 : 0), 1)}" height="${bh}" fill="${s.color}" class="hbar"/>${label}</g>`;
+      }).join('');
+      inner = `<clipPath id="${cid}"><rect x="${plotX}" y="${y}" width="${plotW}" height="${bh}" rx="4"/></clipPath><g clip-path="url(#${cid})">${inner}</g>`;
+    } else inner = `<text x="${plotX}" y="${y + bh / 2 + 4}" class="ct muted">暂无数据</text>`;
+    return `<text x="0" y="${y + bh / 2 + 5}" class="cn">${esc(r.name)}</text>${inner}<text x="${W}" y="${y + bh / 2 + 5}" class="cv" text-anchor="end">${num(r.total)}</text>`;
+  }).join('');
+  return `<svg class="chart-svg" viewBox="0 0 ${W} ${rows.length * rh}" role="img">${out}</svg>`;
+}
+
+// 表格单元格内的小条
+const cellBar = (v, mx) => `<span class="cellbar"><i style="width:${mx ? (v / mx * 100).toFixed(1) : 0}%"></i></span><span class="cellnum">${num(v)}</span>`;
+
+// 悬停提示：整页共用一个浮层，内容用 textContent 写入
+let tipEl = null;
+function showTip(lines, x, y) {
+  if (!tipEl) { tipEl = document.createElement('div'); tipEl.className = 'tip'; document.body.appendChild(tipEl); }
+  tipEl.textContent = '';
+  lines.forEach(([text, color], i) => {
+    const d = document.createElement('div');
+    d.className = i ? 'tip-row' : 'tip-title';
+    if (color) { const k = document.createElement('i'); k.style.background = color; d.appendChild(k); }
+    d.appendChild(document.createTextNode(text));
+    tipEl.appendChild(d);
+  });
+  tipEl.style.display = 'block';
+  const w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+  tipEl.style.left = Math.max(8, Math.min(x + 14, innerWidth - w - 8)) + 'px';
+  tipEl.style.top = (y + 14 + h > innerHeight ? Math.max(8, y - h - 14) : y + 14) + 'px';
+}
+const hideTip = () => { if (tipEl) tipEl.style.display = 'none'; const c = document.querySelector('.cross'); if (c) c.style.display = 'none'; };
+function trendHover(svg, clientX, clientY) {
+  const s = trendStore, r = svg.getBoundingClientRect(), x = (clientX - r.left) / r.width * s.W;
+  const i = Math.max(0, Math.min(s.n - 1, s.n > 1 ? Math.round((x - s.L) / (s.pw / (s.n - 1))) : 0));
+  const cur = s.t.cur[i], prev = s.t.prev[i], cross = svg.querySelector('.cross');
+  cross.style.display = '';
+  cross.querySelector('.cross-line').setAttribute('x1', s.X(i)); cross.querySelector('.cross-line').setAttribute('x2', s.X(i));
+  [['.dot-cur', cur], ['.dot-prev', prev]].forEach(([k, d]) => { const c = cross.querySelector(k); c.style.display = d.v === null ? 'none' : ''; c.setAttribute('cx', s.X(i)); c.setAttribute('cy', s.Y(d.v)); });
+  showTip([[cur.date], [`本期 ${s.fmtV(cur.v)}`, CH.accent], [`上期 ${s.fmtV(prev.v)}（${prev.date}）`, CH.prev]], clientX, clientY);
+}
+if (typeof document !== 'undefined') {
+  document.addEventListener('pointermove', e => {
+    const svg = e.target.closest && e.target.closest('svg.trend');
+    if (svg && e.target.classList.contains('trend-hit')) return trendHover(svg, e.clientX, e.clientY);
+    const t = e.target.closest && e.target.closest('[data-tip]');
+    if (t) showTip(JSON.parse(t.dataset.tip), e.clientX, e.clientY); else hideTip();
+  });
+  document.addEventListener('focusin', e => {
+    const t = e.target.closest && e.target.closest('[data-tip]');
+    if (t) { const r = t.getBoundingClientRect(); showTip(JSON.parse(t.dataset.tip), r.left + 40, r.top + r.height / 2 - 14); }
+  });
+  document.addEventListener('focusout', hideTip);
+  document.addEventListener('scroll', hideTip, true);
+}
+
+// ---------- 各块渲染 ----------
+const OVERVIEW_TREND = ['visitors', 'penetration', 'detail', 'got', 'acc', 'tasks'];
+function renderSummary(M) {
+  const cards = M.cards.map(c => {
+    const label = CARD_NAMES[c.k];
+    const value = c.k === 'install' ? notConnected() : `<b>${c.kind === 'rate' ? (c.v * 100).toFixed(1) + '%' : num(c.v)}</b>`;
+    const extra = `<div class="trend">${c.series ? spark(c.series, c.kind) : `<span class="trend-none">无趋势</span>`}</div>`;
+    return metric(label, value, deltaCell(c.v, c.prev, c.kind), extra);
+  }).join('');
+  const tk = OVERVIEW_TREND.includes(state.trend) ? state.trend : 'visitors', tr = M.trend[tk], tname = CARD_NAMES[tk];
+  const trend = `<div class="card chart"><div class="chart-head"><b>${esc(tname)} · 按天</b>
+    <select id="trendMetric" aria-label="选择指标">${OVERVIEW_TREND.map(k => `<option value="${k}" ${k === tk ? 'selected' : ''}>${esc(CARD_NAMES[k])}</option>`).join('')}</select></div>
+    ${tr.cur.every(x => x.v === null) && tr.prev.every(x => x.v === null) ? chartEmpty(300) : chartScroll(trendChart(tr, tname)) + legend([['本期', CH.accent, 'ln'], ['上期', CH.prev, 'ln dashed']])}</div>`;
+  const pvRows = M.pages.map(r => {
+    const name = PAGE_NAMES[r.k], per = r.uv ? (r.pv / r.uv).toFixed(2) : dash;
+    return { name, bars: [{ v: r.pv, color: CH.accent }, { v: r.uv, color: CH.blue }], cols: [per, r.avgUv],
+      tip: [[name], [`PV ${num(r.pv)}`, CH.accent], [`UV ${num(r.uv)}`, CH.blue],
+        [`人均 PV ${per}`], [`日均 UV ${r.avgUv}`]] };
+  });
+  const pv = `<div class="card chart">${M.pages.every(r => r.pv === 0 && r.uv === 0) ? chartEmpty(240)
+    : legend([['PV', CH.accent], ['UV', CH.blue]]) + chartScroll(hbars(pvRows, { nameHead: '页面', colHeads: ['人均 PV', '日均 UV'], colsW: [134, 132] }))}</div>`;
+  return `<div class="cards four all">${cards}</div>${sub('趋势')}${trend}${sub('页面浏览')}${pv}`;
+}
+
+function renderSource(M) {
+  const impRows = M.imp.map(r => {
+    const name = IMP_NAMES[r.k], rate = pctTxt(r.matched, r.viewers);
+    return { name, bars: [{ v: r.viewers, color: CH.accent }], cols: [num(r.clickers), rate],
+      tip: [[name], [`曝光人数 ${num(r.viewers)}`], [`点击人数 ${num(r.clickers)}`],
+        [`匹配点击人数 ${num(r.matched)}`], [`点击率 ${rate}`]] };
+  });
+  const imp = `<div class="card chart">${M.imp.every(r => !r.viewers && !r.clickers) ? chartEmpty(200)
+    : chartScroll(hbars(impRows, { nameHead: '位置', plotHead: '曝光人数',
+      colHeads: ['点击人数', '点击率'], colsW: [100, 80] }))}</div>`;
+  const rows = M.src.map(r => {
+    const name = SRC_NAMES[r.k];
+    return { name, bars: [{ v: r.visitors, color: CH.accent }], cols: [num(r.got)],
+      tip: [[name], [`${CARD_NAMES.detail} ${num(r.visitors)}`, CH.accent], [`${CARD_NAMES.got} ${num(r.got)}`]] };
+  });
+  const src = `<div class="card chart">${M.src.every(r => !r.visitors && !r.got) ? chartEmpty(200)
+    : chartScroll(hbars(rows, { nameHead: '来源', plotHead: CARD_NAMES.detail,
+      colHeads: [CARD_NAMES.got], colsW: [155] }))}</div>`;
+  return `${sub('曝光与点击')}${imp}${sub('详情来源')}${src}`;
+}
+
+function flowStage(label, count, rate = '') {
+  return `<div class="flow-stage"><span>${label}</span><b>${num(count)}</b>${rate ? `<small>${rate}</small>` : ''}</div>`;
+}
+
+function flowBreakdown(title, rows, base, baseLabel) {
+  const head = `<div class="flow-list-head"><h3>${title}</h3><small>分母 · ${baseLabel} ${num(base)}</small></div>`;
+  return `<div class="flow-breakdown">${head}<ul>${rows.map(([label, count, tone, note]) => `
+    <li class="flow-row"><span>${label}${note ? `<small>${note}</small>` : ''}</span><b>${num(count)}</b><span class="flow-rate">${pct(count, base)}</span>
+      <span class="flow-meter" aria-hidden="true"><i class="${tone}" style="width:${base ? count / base * 100 : 0}%"></i></span></li>`).join('')}</ul></div>`;
+}
+
+function flowResults(m, success, existing, total, baseLabel, title) {
+  const unknownNote = `明确返回未知 ${num(m.returnedUnknown)} · 未关联结果 ${num(m.missing)}`;
+  return flowBreakdown(title, [
+    [...success, 'positive'],
+    [...existing, 'neutral'],
+    ['明确失败', m.failed, 'negative', `未注明原因 ${num(m.failed)}`],
+    ['结果未知', m.returnedUnknown + m.missing, 'neutral', unknownNote]
+  ], total, baseLabel);
+}
+
+function renderAcquisition(M) {
+  const m = M.acquisition;
+  const tapped = '发起获取';
+  const success = '新增获取成功';
+  return `<p class="hint flow-note">仅应用详情页发起。按同一次操作关联获取结果。</p>
+    <div class="card flow-card">${m.attempts ? `
+    <div class="flow-stages">${flowStage(tapped, m.attempts)}${flowStage(success, m.newly,
+      `新增获取成功率 · ${pct(m.newly, m.attempts)}`)}</div>
+    ${flowResults(m, [success, m.newly], ['已获取', m.already], m.attempts, tapped, '获取结果')}`
+    : chartEmpty(120)}</div>`;
+}
+
+function renderSends(M) {
+  const m = M.sends;
+  const started = '发起推送';
+  const submitted = '提交推送';
+  const accepted = '新任务已受理';
+  const reasons = Object.entries(m.reasons).sort((a, b) => b[1] - a[1])
+    .map(([key, count]) => [REASON_NAMES[key], count, 'neutral']);
+  return `<p class="hint flow-note">此前已获取的应用也计入。直提和选设备后提交均计入提交推送。</p>
+    <div class="card flow-card">${m.attempts ? `
+      <div class="flow-stages">${flowStage(started, m.attempts)}${flowStage(submitted, m.submitted,
+        `提交率 · ${pct(m.submitted, m.attempts)}`)}${flowStage(accepted, m.newTask,
+        `新任务受理率 · ${pct(m.newTask, m.submitted)}`)}</div>
+      ${flowResults(m, [accepted, m.newTask], ['已有待下载任务', m.pending],
+        m.submitted, submitted, '提交结果')}
+      ${flowBreakdown('提交前未完成', reasons, m.attempts, started)}` : chartEmpty(120)}
+      <div class="flow-device"><span>设备接收、安装、首次运行</span>${notConnected()}</div>
+    </div>`;
+}
+
+function renderTrial(M) {
+  const t = M.trial;
+  return `<div class="cards">
+    ${metric('试玩人数', `<b>${num(t.users)}</b>`, deltaCell(t.users, t.prev.users, 'count'))}
+    ${metric('平均试玩时长', t.secs === null ? noData() : `<b>${t.secs + ' 秒'}</b>`, deltaCell(t.secs, t.prev.secs, 'count'))}</div>`;
+}
+
+function renderUpdate(M) {
+  const u = M.update;
+  return `<div class="cards">${metric('点更新人数', `<b>${num(u.tap)}</b>`, deltaCell(u.tap, u.prev.tap, 'count'))}
+    ${metric('更新受理人数', `<b>${num(u.acc)}</b>`, deltaCell(u.acc, u.prev.acc, 'count'))}
+    ${metric('更新受理任务', `<b>${num(u.tasks)}</b>`, deltaCell(u.tasks, u.prev.tasks, 'count'))}</div>`;
+}
+
+function renderRank(M) {
+  const { key, dir } = state.sort, sg = dir === 'desc' ? -1 : 1;
+  const apps = M.apps.slice().sort((a, b) => sg * (a[key] - b[key]) || b.got - a.got);
+  const maxGot = Math.max(...apps.map(a => a.got), 1);
+  const arrow = k => (state.sort.key === k ? (state.sort.dir === 'desc' ? ' ▼' : ' ▲') : '');
+  const head = RANK_COLS.map(([k, label]) => `<th aria-sort="${state.sort.key === k ? (state.sort.dir === 'desc' ? 'descending' : 'ascending') : 'none'}" class="n sortable ${state.sort.key === k ? 'sorted' : ''}"><button class="thbtn" data-act="sort" data-v="${k}">${label}${arrow(k)}</button></th>`).join('');
+  const rows = apps.length ? apps.map(a => `<tr><td><span class="app-icon" style="background:${iconColor(a.name)}">${[...a.name][0]}</span>${a.name}</td>
+    <td>${a.listed ? badge('已上架', 'green') : badge('已下架')}</td>
+    <td class="n">${num(a.pv)}</td><td class="n">${num(a.uv)}</td><td class="n">${num(a.trial)}</td><td class="n">${cellBar(a.got, maxGot)}</td><td class="n">${num(a.pushed)}</td>
+    </tr>`).join('') : `<tr><td colspan="7" class="center">${noData()}</td></tr>`;
+  return `<p class="hint">默认按新增获取量倒序，点列头切换排序</p>
+    ${tableWrap(`<table><thead><tr><th>应用</th><th>状态</th>${head}</tr></thead><tbody>${rows}</tbody></table>`)}`;
+}
+function iconColor(name) { return `hsl(${Math.floor(hash(name) * 360)} 40% 45%)`; }
+
+function renderSupply(M) {
+  const s = M.supply, pr = s.prev;
+  const range = dayBack(state.period - 1).toISOString().slice(0, 10) + ' – ' + ASOF;
+  const snapshot = `<small>快照日期 · ${s.snapshot}</small>`;
+  const periodLabel = `<small>统计期间 · ${range}</small>`;
+  const listed = s.currentOnly ? '当前在架' : '在架应用';
+  const developers = s.currentOnly ? '当前在架开发者' : '在架开发者';
+  const one = (name, k, isSnapshot = false) => metric(name, `<b>${num(s[k])}</b>`,
+    deltaCell(s[k], isSnapshot && s.currentOnly ? null : pr[k], 'count'), isSnapshot ? snapshot : periodLabel);
+  const cur = { ...s, review: s.submitted - s.approved - s.rejected };
+  const seg = (label, color, k, total) => ({ name: label, v: cur[k], color,
+    tip: [[label], [`${num(cur[k])}（${pctTxt(cur[k], total)}）`, color]] });
+  const rows = [
+    { name: listed, total: s.listed, segs: [seg('官方', CH.accent, 'official', s.listed), seg('第三方', CH.blue, 'third', s.listed)] },
+    { name: '提交审核', total: s.submitted, track: true, segs: [seg('通过', CH.green, 'approved', s.submitted), seg('驳回', CH.red, 'rejected', s.submitted), seg('审核中', CH.prev, 'review', s.submitted)] }
+  ];
+  return `<div class="cards four">${one(listed, 'listed', true)}${one('新上架', 'newly')}${one(developers, 'developers', true)}${one('提交审核', 'submitted')}</div>
+    ${sub('供给构成')}
+    <div class="card chart">${legend([['官方', CH.accent], ['第三方', CH.blue], ['通过', CH.green], ['驳回', CH.red], ['审核中', CH.prev]])}${chartScroll(stackBars(rows))}</div>`;
+}
+
+function renderSearch(M) {
+  const rows = (list, f) => (list.length ? list.map(f).join('') : `<tr><td colspan="3" class="center">${noData()}</td></tr>`);
+  const mx = list => Math.max(...list.map(r => r.times), 1);
+  const line = (list, m) => r => `<tr><td>${r.w}</td><td class="n">${cellBar(r.times, m)}</td><td class="n">${num(r.users)}</td></tr>`;
+  return `<p class="hint">示例各给 15 条；正式页面显示前 50</p>
+    <div class="pair"><div>${sub('热门搜索词')}${tableWrap(`<table><thead><tr><th>搜索词</th><th class="n">搜索次数</th>
+    <th class="n">搜索人数</th></tr></thead><tbody>${rows(M.top, line(M.top, mx(M.top)))}</tbody></table>`)}
+    </div><div>${sub('无结果搜索词')}${tableWrap(`<table><thead><tr><th>搜索词</th><th class="n">无结果次数</th>
+    <th class="n">搜索人数</th></tr></thead><tbody>${rows(M.noRes, line(M.noRes, mx(M.noRes)))}</tbody></table>`)}</div></div>`;
+}
+
+function renderShare(M) {
+  const ch = DATA[state.env].channels, d = M.share.detail, a = M.share.article;
+  const group = (label, s) => `${sub(label)}<div class="cards four">
+    ${metric('发起分享人数', `<b>${num(s.sharers)}</b>`, null)}${metric('从分享链接打开 App 的人数', `<b>${num(s.visitors)}</b>`, null)}
+    ${metric('复制链接成功', `<b>${num(s.copied)}</b>`, null)}${metric('保存图片成功', `<b>${num(s.saved)}</b>`, null)}</div>`;
+  const rows = ch.map((name, i) => {
+    return { name, bars: [{ v: d.taps[i], color: CH.accent }, { v: a.taps[i], color: CH.blue }],
+      tip: [[name], [`应用详情 ${num(d.taps[i])}`, CH.accent], [`精选文章 ${num(a.taps[i])}`, CH.blue]] };
+  });
+  const chart = `<div class="card chart">${[...d.taps, ...a.taps].every(v => v === 0) ? chartEmpty(240)
+    : legend([['应用详情', CH.accent], ['精选文章', CH.blue]]) + chartScroll(hbars(rows, { nameHead: '渠道', plotHead: '次数（条长）' }))}</div>`;
+  const note = `<p class="hint">只统计 App 内的操作，App 拿不到分享回调，不代表分享成功或对方打开。</p>`;
+  return `${note}<div class="pair"><div>${group('应用详情', d)}</div><div>${group('精选文章', a)}</div></div>${sub('选择渠道次数')}<p class="hint">不代表分享成功</p>${chart}`;
+}
+
+// ---------- 页面 ----------
+function seg(items, cur, act) {
+  return `<div class="seg">${items.map(([v, label]) => `<button class="${String(cur) === String(v) ? 'primary' : ''}" data-act="${act}" data-v="${v}">${label}</button>`).join('')}</div>`;
+}
+function sidebar() {
+  const groups = [
+    ['应用管理', [['应用审核'], ['应用列表'], ['精选文章'], ['分类管理'], ['商店使用', true]]],
+    ['用户与权限', [['用户列表'], ['开发者白名单'], ['管理员权限']]],
+    ['系统设置', [['设备型号'], ['通知配置']]]
+  ];
+  return `<aside class="sidebar"><div class="brand"><span>L</span>轻应用管理后台</div>${groups.map(([label, items]) =>
+    `<div class="navgroup"><small>${label}</small>${items.map(([item, on]) => `<div class="navitem ${on ? 'active' : ''}">${item}</div>`).join('')}</div>`).join('')}</aside>`;
+}
+
+// 口径说明：每个页签底部一个框，内容见 defs.js
+const codeMd = t => t.replace(/`([^`]+)`/g, '<code>$1</code>');
+function definitions(tabKey) {
+  const groups = [...DEFS_COMMON, ...DEFS[tabKey]].map(([group, items]) => `<h4>${group}</h4><ul>${items.map(([label, description]) =>
+    `<li><b>${label}</b>${codeMd(description)}</li>`).join('')}</ul>`).join('');
+  return `<section class="defs"><h3>口径说明</h3>
+    <p class="hint">${codeMd('事件名省略前缀 `community_lightapp_`；字段取值照埋点表')}</p>${groups}</section>`;
+}
+
+function render() {
+  if (typeof document !== 'undefined') CH.W = calcW();
+  const M = model(state.env, state.period, state.empty);
+  const tab = TABS.find(t => t[0] === state.tab);
+  const bodies = {
+    summary: renderSummary, source: renderSource, acquisition: renderAcquisition, sends: renderSends,
+    trial: renderTrial, update: renderUpdate, rank: renderRank,
+    supply: renderSupply, search: renderSearch, share: renderShare
+  };
+  document.getElementById('app').innerHTML = `<div class="shell">${sidebar()}<main class="content">
+    <div class="heading"><h1>商店使用</h1><small>演示数据 · 截至 ${ASOF}</small></div>
+    <p class="muted">默认排除审核和作者自测的数据</p>
+    <div class="controls">
+      ${seg([[7, '近 7 天'], [30, '近 30 天'], [90, '近 90 天']], state.period, 'period')}
+      ${seg([['cn', '国内'], ['os', '海外']], state.env, 'env')}
+    </div>
+    <nav class="tabs">${TABS.map(([k, label]) => `<button class="tab ${state.tab === k ? 'on' : ''}" data-act="tab" data-v="${k}">${label}</button>`).join('')}</nav>
+    <h2 class="tab-title">${tab[2]}</h2>
+    ${state.tab === 'getsend'
+      ? `<div class="flow-grid">${tab[3].slice(0, 2).map(k => block(k, bodies[k](M))).join('')}</div>
+        ${tab[3].slice(2).map(k => block(k, bodies[k](M))).join('')}`
+      : tab[3].map(k => block(k, bodies[k](M))).join('')}
+    ${definitions(tab[0])}
+  </main></div>`;
+  if (typeof renderConsole === 'function') renderConsole();
+}
+
+function onAct(act, v) {
+  if (act === 'tab') state.tab = v;
+  else if (act === 'period') state.period = Number(v);
+  else if (act === 'env') state.env = v;
+  else if (act === 'sort') {
+    state.sort = state.sort.key === v ? { key: v, dir: state.sort.dir === 'desc' ? 'asc' : 'desc' } : { key: v, dir: 'desc' };
+  } else if (act === 'retry') delete state.failed[v];
+  else if (typeof consoleAct === 'function' && consoleAct(act, v)) { /* 已处理 */ }
+  else return;
+  render();
+}
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-act]');
+    if (!b) return;
+    const { act, v } = b.dataset;
+    onAct(act, v);
+    if (e.detail === 0) document.querySelector(`button[data-act="${act}"]${v ? `[data-v="${v}"]` : ''}`)?.focus();
+  });
+  document.addEventListener('change', e => {
+    if (e.target.id === 'trendMetric') { state.trend = e.target.value; render(); document.getElementById('trendMetric').focus(); }
+  });
+  render();
+  let rz = 0;
+  window.addEventListener('resize', () => {
+    clearTimeout(rz);
+    rz = setTimeout(() => { if (calcW() !== CH.W) render(); }, 120);
+  });
+}
+</script>
+<script>// 演示控制台（仅 Demo 用）：对选中的一块模拟读取失败 / 空周期，或重置
+let consoleOpen = false;
+let consoleBlockSel = 'summary';
+
+// 模拟状态作用的块可能在别的页签 里，切过去才看得到
+function showBlockTab() { state.tab = TABS.find(t => t[3].includes(consoleBlockSel))[0]; }
+
+function consoleAct(act, v) {
+  if (act === 'toggleConsole') { consoleOpen = !consoleOpen; return true; }
+  if (act === 'simFail') { state.failed[consoleBlockSel] = true; showBlockTab(); return true; }
+  if (act === 'simEmpty') { state.empty[consoleBlockSel] = true; showBlockTab(); return true; }
+  if (act === 'resetAll') {
+    state.failed = {}; state.empty = {}; state.tab = 'overview'; state.period = 30; state.env = 'cn';
+    state.sort = { key: 'got', dir: 'desc' }; consoleBlockSel = 'summary';
+    return true;
+  }
+  return false;
+}
+
+function renderConsole() {
+  const el = document.getElementById('console');
+  const active = BLOCKS.filter(([k]) => state.failed[k] || state.empty[k]).map(([k, label]) =>
+    `<li>${label}：${[state.failed[k] ? '读取失败' : '', state.empty[k] ? '空周期' : ''].filter(Boolean).join(' · ')}</li>`).join('');
+  el.innerHTML = `${consoleOpen ? `<div class="console-panel"><h3>演示控制台</h3>
+    <label>作用于哪一块<select id="consoleBlock">${BLOCKS.map(([k, label]) =>
+      `<option value="${k}" ${k === consoleBlockSel ? 'selected' : ''}>${label}</option>`).join('')}</select></label>
+    <div class="console-btns">
+      <button data-act="simFail">模拟读取失败</button>
+      <button data-act="simEmpty">模拟空周期</button>
+      <button data-act="resetAll">重置</button>
+    </div>
+    <ul class="console-state">${active || `<li class="muted">当前没有模拟状态</li>`}</ul></div>` : ''}
+    <button class="console-toggle" data-act="toggleConsole">演示控制台</button>`;
+}
+
+document.addEventListener('change', e => {
+  if (e.target.id === 'consoleBlock') consoleBlockSel = e.target.value;
+});
+renderConsole();
+</script>
+</body>
+</html>
